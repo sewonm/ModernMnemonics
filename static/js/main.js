@@ -330,6 +330,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
 
+    // Video box initialization and handlers
+    const videoBoxes = document.querySelectorAll('.video-box');
+    videoBoxes.forEach(box => {
+        const video = box.querySelector('video');
+        if (video) {
+            // Set initial frame
+            video.currentTime = 0;
+            
+            // Play on hover
+            box.addEventListener('mouseenter', () => {
+                video.play();
+            });
+            
+            // Pause and reset on mouse leave
+            box.addEventListener('mouseleave', () => {
+                video.pause();
+                video.currentTime = 0;
+            });
+        }
+
+        // Handle selection
+        box.addEventListener('click', () => {
+            if (box.dataset.video) {
+                videoBoxes.forEach(b => b.classList.remove('active'));
+                box.classList.add('active');
+                generator.currentVideo = box.dataset.video;
+            }
+        });
+    });
+
     // Initialize
     const initialMode = 'brainrot';
     document.querySelector(`[data-mode="${initialMode}"]`).classList.add('active');
