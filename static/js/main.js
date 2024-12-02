@@ -7,66 +7,120 @@ class MnemonicGenerator {
         this.currentVideo = '';
         this.currentSong = 'pop';
         this.currentCharacter = 'friendly';
+        this.chatHistory = [];
+        this.apiKey = localStorage.getItem('openai_api_key') || '';
+    }
+
+    setApiKey(key) {
+        this.apiKey = key;
+        localStorage.setItem('openai_api_key', key);
     }
 
     async generateMnemonic(word) {
-        let prompt = this.getPromptForMode(word);
+        switch(this.currentMode) {
+            case 'brainrot':
+                return this.generateBrainrotMnemonic(word);
+            case 'song':
+                return this.generateSongMnemonic(word);
+            case 'chatbot':
+                return this.initiateChatbotConversation(word);
+            default:
+                return this.generateBrainrotMnemonic(word);
+        }
+    }
+
+    async generateBrainrotMnemonic(word) {
+        const response = await this.callOpenAI([
+            {
+                role: "system",
+                content: "You are a creative assistant that creates fun, engaging, and internet-culture inspired video scripts. Make it trendy and memorable."
+            },
+            {
+                role: "user",
+                content: `Create a short, engaging video script for learning about: ${word}. Use internet culture, memes, and trending formats to make it memorable.`
+            }
+        ]);
+        return response;
+    }
+
+    async generateSongMnemonic(word) {
+        const response = await this.callOpenAI([
+            {
+                role: "system",
+                content: `You are a musical composer creating educational songs in ${this.currentSong} style.`
+            },
+            {
+                role: "user",
+                content: `Create memorable ${this.currentSong} style song lyrics about: ${word}. Make it catchy and educational.`
+            }
+        ]);
+        return response;
+    }
+
+    async initiateChatbotConversation(word) {
+        const initialMessage = await this.callOpenAI([
+            {
+                role: "system",
+                content: `You are a ${this.currentCharacter} character helping people learn. Stay in character throughout the conversation.`
+            },
+            {
+                role: "user",
+                content: `I want to learn about: ${word}. Can you help me understand it better?`
+            }
+        ]);
         
+        this.chatHistory = [
+            { role: 'system', content: `Character: ${this.currentCharacter}` },
+            { role: 'bot', content: initialMessage }
+        ];
+        
+        return initialMessage;
+    }
+
+    async sendChatMessage(message) {
+        this.chatHistory.push({ role: 'user', content: message });
+        
+        const response = await this.callOpenAI([
+            {
+                role: "system",
+                content: `You are a ${this.currentCharacter} character helping people learn. Stay in character throughout the conversation.`
+            },
+            ...this.chatHistory.map(msg => ({
+                role: msg.role === 'bot' ? 'assistant' : msg.role,
+                content: msg.content
+            }))
+        ]);
+        
+        this.chatHistory.push({ role: 'bot', content: response });
+        return response;
+    }
+
+    async callOpenAI(messages) {
+        if (!this.apiKey) {
+            throw new Error('Please enter your OpenAI API key first');
+        }
+
         const response = await fetch(CONFIG.API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${CONFIG.OPENAI_API_KEY}`
+                'Authorization': `Bearer ${this.apiKey}`
             },
             body: JSON.stringify({
                 model: CONFIG.MODEL,
-                messages: [
-                    {
-                        role: "system",
-                        content: this.getSystemPrompt()
-                    },
-                    {
-                        role: "user",
-                        content: prompt
-                    }
-                ],
-                max_tokens: 150,
+                messages: messages,
+                max_tokens: 500,
                 temperature: 0.7
             })
         });
 
         if (!response.ok) {
-            throw new Error(`API request failed: ${response.statusText}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error?.message || `API request failed: ${response.statusText}`);
         }
 
         const data = await response.json();
         return data.choices[0].message.content.trim();
-    }
-
-    getSystemPrompt() {
-        switch(this.currentMode) {
-            case 'brainrot':
-                return "You are a creative assistant that creates memorable, internet-culture inspired mnemonics.";
-            case 'song':
-                return `You are a musical composer creating mnemonics in the style of ${this.currentSong} music.`;
-            case 'chatbot':
-                return `You are a ${this.currentCharacter} character helping people remember things through conversation.`;
-            default:
-                return "You are a helpful assistant that creates memorable mnemonics.";
-        }
-    }
-
-    getPromptForMode(word) {
-        switch(this.currentMode) {
-            case 'brainrot':
-                return `Create a memorable, chaotic and internet-culture inspired mnemonic for the word: ${word}. Make it trendy and engaging.`;
-            case 'song':
-                return `Create a catchy ${this.currentSong}-style song or jingle for remembering the word: ${word}`;
-            case 'chatbot':
-                return `As a ${this.currentCharacter}, create a dialogue that helps remember the word: ${word}`;
-            default:
-                return `Create a memorable mnemonic for the word: ${word}`;
-        }
     }
 
     loadSavedMnemonics() {
@@ -79,49 +133,52 @@ class MnemonicGenerator {
             word,
             mnemonic,
             date: new Date().toISOString(),
-            mode: this.currentMode
+            mode: this.currentMode,
+            options: this.getCurrentModeOptions()
         };
-
-        // Add mode-specific data
-        switch(this.currentMode) {
-            case 'brainrot':
-                mnemonicData.voice = this.currentVoice;
-                mnemonicData.video = this.currentVideo;
-                break;
-            case 'song':
-                mnemonicData.songStyle = this.currentSong;
-                break;
-            case 'chatbot':
-                mnemonicData.character = this.currentCharacter;
-                break;
-        }
 
         this.savedMnemonics.push(mnemonicData);
         localStorage.setItem('savedMnemonics', JSON.stringify(this.savedMnemonics));
     }
 
-    getSavedMnemonics() {
-        return this.savedMnemonics;
+    getCurrentModeOptions() {
+        switch(this.currentMode) {
+            case 'brainrot':
+                return { voice: this.currentVoice, video: this.currentVideo };
+            case 'song':
+                return { style: this.currentSong };
+            case 'chatbot':
+                return { character: this.currentCharacter };
+            default:
+                return {};
+        }
     }
 }
 
 // DOM interaction code
 document.addEventListener('DOMContentLoaded', () => {
     const generator = new MnemonicGenerator();
+    const apiKeyInput = document.getElementById('api-key-input');
+    const saveApiKeyBtn = document.getElementById('save-api-key');
     const wordInput = document.getElementById('wordInput');
     const generateBtn = document.getElementById('generateBtn');
     const saveBtn = document.getElementById('saveBtn');
     const resultDiv = document.getElementById('result');
     const loadingSpinner = document.getElementById('loading');
     const savedList = document.getElementById('savedList');
-    
-    let currentMnemonic = '';
+    const chatInterface = document.getElementById('chatInterface');
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const sendMessageBtn = document.getElementById('sendMessage');
+    const modeButtons = document.querySelectorAll('.mode-btn');
 
     function showModeOptions(mode) {
-        // Hide all mode options first
+        // Hide all mode options and chat interface
         document.querySelectorAll('.mode-options').forEach(option => {
             option.style.display = 'none';
         });
+        chatInterface.style.display = 'none';
+        resultDiv.style.display = 'block';
         
         // Show the options for the selected mode
         const optionsToShow = document.getElementById(`${mode}Options`);
@@ -130,75 +187,134 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function addChatMessage(message, isUser = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message ${isUser ? 'user-message' : 'bot-message'}`;
+        messageDiv.textContent = message;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // API Key handling
+    if (generator.apiKey) {
+        apiKeyInput.value = generator.apiKey;
+    }
+
+    saveApiKeyBtn.addEventListener('click', () => {
+        const key = apiKeyInput.value.trim();
+        if (key) {
+            generator.setApiKey(key);
+            alert('API Key saved successfully!');
+        } else {
+            alert('Please enter an API key');
+        }
+    });
+
     // Mode selection
-    const modeButtons = document.querySelectorAll('.mode-btn');
     modeButtons.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Update button states
             modeButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            generator.currentMode = btn.dataset.mode;
+            showModeOptions(btn.dataset.mode);
+        });
+    });
+
+    // Chat interface handlers
+    sendMessageBtn.addEventListener('click', async () => {
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        addChatMessage(message, true);
+        chatInput.value = '';
+        
+        try {
+            const response = await generator.sendChatMessage(message);
+            addChatMessage(response);
+        } catch (error) {
+            addChatMessage('Error: Could not send message. Please try again.');
+        }
+    });
+
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessageBtn.click();
+        }
+    });
+
+    generateBtn.addEventListener('click', async () => {
+        const word = wordInput.value.trim();
+        if (!word) {
+            alert('Please enter a word');
+            return;
+        }
+
+        if (!generator.apiKey) {
+            alert('Please enter your OpenAI API key first');
+            return;
+        }
+
+        try {
+            loadingSpinner.style.display = 'block';
+            generateBtn.disabled = true;
             
-            // Update current mode and show relevant options
-            const mode = btn.dataset.mode;
-            generator.currentMode = mode;
-            showModeOptions(mode);
-        });
+            const response = await generator.generateMnemonic(word);
+            
+            if (generator.currentMode === 'chatbot') {
+                // Show chat interface for chatbot mode
+                resultDiv.style.display = 'none';
+                chatInterface.style.display = 'block';
+                chatMessages.innerHTML = '';
+                addChatMessage(response);
+            } else {
+                // Show regular result for other modes
+                resultDiv.innerHTML = `<p class="mnemonic">${response}</p>`;
+                saveBtn.style.display = 'block';
+            }
+        } catch (error) {
+            resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            if (error.message.includes('API key')) {
+                apiKeyInput.focus();
+            }
+        } finally {
+            loadingSpinner.style.display = 'none';
+            generateBtn.disabled = false;
+        }
     });
 
-    // Set initial active mode and show its options
-    const initialMode = 'brainrot';
-    document.querySelector(`[data-mode="${initialMode}"]`).classList.add('active');
-    showModeOptions(initialMode);
-
-    // Brainrot mode options
-    const voiceInputs = document.querySelectorAll('input[name="voice"]');
-    voiceInputs.forEach(input => {
-        input.addEventListener('change', () => {
-            generator.currentVoice = input.value;
-        });
+    saveBtn.addEventListener('click', () => {
+        const word = wordInput.value.trim();
+        const mnemonic = resultDiv.querySelector('.mnemonic')?.textContent;
+        
+        if (mnemonic) {
+            try {
+                generator.saveMnemonic(word, mnemonic);
+                updateSavedList();
+                alert('Mnemonic saved successfully!');
+            } catch (error) {
+                alert(`Error saving mnemonic: ${error.message}`);
+            }
+        }
     });
 
-    const videoSelect = document.getElementById('backgroundVideo');
-    if (videoSelect) {
-        videoSelect.addEventListener('change', () => {
-            generator.currentVideo = videoSelect.value;
-        });
-    }
-
-    // Song mode options
-    const songSelect = document.getElementById('songStyle');
-    if (songSelect) {
-        songSelect.addEventListener('change', () => {
-            generator.currentSong = songSelect.value;
-        });
-    }
-
-    // Chatbot mode options
-    const characterSelect = document.getElementById('character');
-    if (characterSelect) {
-        characterSelect.addEventListener('change', () => {
-            generator.currentCharacter = characterSelect.value;
-        });
-    }
-
-    // Update saved mnemonics display
     function updateSavedList() {
-        const mnemonics = generator.getSavedMnemonics();
+        const mnemonics = generator.savedMnemonics;
         savedList.innerHTML = mnemonics.map(item => {
             let details = `Mode: ${item.mode}`;
             
-            // Add mode-specific details
-            switch(item.mode) {
-                case 'brainrot':
-                    details += ` | Voice: ${item.voice}`;
-                    if (item.video) details += ` | Video: ${item.video}`;
-                    break;
-                case 'song':
-                    details += ` | Style: ${item.songStyle}`;
-                    break;
-                case 'chatbot':
-                    details += ` | Character: ${item.character}`;
-                    break;
+            if (item.options) {
+                switch(item.mode) {
+                    case 'brainrot':
+                        details += ` | Voice: ${item.options.voice}`;
+                        if (item.options.video) details += ` | Video: ${item.options.video}`;
+                        break;
+                    case 'song':
+                        details += ` | Style: ${item.options.style}`;
+                        break;
+                    case 'chatbot':
+                        details += ` | Character: ${item.options.character}`;
+                        break;
+                }
             }
 
             return `
@@ -214,40 +330,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
 
-    generateBtn.addEventListener('click', async () => {
-        const word = wordInput.value.trim();
-        if (!word) {
-            alert('Please enter a word');
-            return;
-        }
-
-        try {
-            loadingSpinner.style.display = 'block';
-            generateBtn.disabled = true;
-            
-            currentMnemonic = await generator.generateMnemonic(word);
-            resultDiv.innerHTML = `<p class="mnemonic">${currentMnemonic}</p>`;
-            saveBtn.style.display = 'block';
-        } catch (error) {
-            resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
-        } finally {
-            loadingSpinner.style.display = 'none';
-            generateBtn.disabled = false;
-        }
-    });
-
-    saveBtn.addEventListener('click', () => {
-        const word = wordInput.value.trim();
-        
-        try {
-            generator.saveMnemonic(word, currentMnemonic);
-            updateSavedList();
-            alert('Mnemonic saved successfully!');
-        } catch (error) {
-            alert(`Error saving mnemonic: ${error.message}`);
-        }
-    });
-
-    // Initialize saved list
+    // Initialize
+    const initialMode = 'brainrot';
+    document.querySelector(`[data-mode="${initialMode}"]`).classList.add('active');
+    showModeOptions(initialMode);
     updateSavedList();
 });

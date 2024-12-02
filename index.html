@@ -85,6 +85,16 @@
 
             <button id="generateBtn">Generate Mnemonic</button>
             <div id="loading" style="display: none;">Generating...</div>
+            
+            <!-- Chat Interface -->
+            <div id="chatInterface" class="chat-interface" style="display: none;">
+                <div id="chatMessages" class="chat-messages"></div>
+                <div class="chat-input-container">
+                    <input type="text" id="chatInput" placeholder="Type your message...">
+                    <button id="sendMessage">Send</button>
+                </div>
+            </div>
+
             <div id="result"></div>
             <button id="saveBtn" style="display: none;">Save Mnemonic</button>
         </div>
