@@ -21,9 +21,9 @@ body {
 }
 
 .container {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 0 1rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 h1 {
@@ -151,11 +151,13 @@ button:disabled {
 
 .mode-buttons {
     display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
 .mode-btn {
+    width: 100%;
     flex: 1;
     min-width: 120px;
     padding: 0.8rem;
@@ -244,13 +246,14 @@ h3 {
 /* Video Grid Styles */
 .video-grid {
     display: flex;
-    justify-content: center;
-    gap: 20px;
+    flex-direction: column;
+    gap: 15px;
     margin: 20px 0;
 }
 
 .video-box {
-    width: 240px;
+    width: 100%;
+    max-width: 320px;
     height: 180px;
     border: 2px solid #ddd;
     border-radius: 8px;
@@ -305,6 +308,7 @@ h3 {
     border: 1px solid #ddd;
     border-radius: 8px;
     overflow: hidden;
+    width: 100%;
 }
 
 .chat-messages {
@@ -416,4 +420,80 @@ h3 {
     padding: 5px;
     text-align: center;
     font-size: 0.9rem;
+}
+
+/* Main content layout */
+.main-content {
+    display: flex;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.options-column {
+    flex: 0 0 45%;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.output-column {
+    flex: 1;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Make the word input full width in its column */
+#wordInput {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+/* Adjust saved section for the right column */
+.saved-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+/* Make the chat interface fit the right column */
+.chat-interface {
+    width: 100%;
+    margin: 20px 0;
+}
+
+/* Ensure buttons and dropdowns fit their containers */
+button, select {
+    width: 100%;
+    max-width: none;
+}
+
+/* Results area */
+#result {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    min-height: 100px;
+}
+
+/* Loading indicator */
+#loading {
+    text-align: center;
+    margin: 20px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .main-content {
+        flex-direction: column;
+    }
+    
+    .options-column,
+    .output-column {
+        flex: 1;
+        width: 100%;
+    }
 }

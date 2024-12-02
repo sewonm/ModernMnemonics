@@ -15,101 +15,106 @@
             <button id="save-api-key">Save API Key</button>
         </div>
 
-        <div class="generator-section">
-            <input type="text" id="wordInput" placeholder="Enter a word or concept...">
-            
-            <div class="mode-selection">
-                <h3>Select Mode</h3>
-                <div class="mode-buttons">
-                    <button class="mode-btn" data-mode="brainrot">Brainrot Mode</button>
-                    <button class="mode-btn" data-mode="song">Song Mode</button>
-                    <button class="mode-btn" data-mode="chatbot">Chatbot Mode</button>
-                </div>
-            </div>
-
-            <!-- Brainrot Mode Options -->
-            <div id="brainrotOptions" class="mode-options" style="display: none;">
-                <p class="mode-description">Transform any topic into a fun, engaging video that makes learning memorable! Perfect for visual learners who enjoy internet culture and memes.</p>
-                <div class="voice-selection">
-                    <h3>Select Voice</h3>
-                    <div class="voice-options">
-                        <label class="voice-option">
-                            <input type="radio" name="voice" value="a" checked>
-                            <span>Voice A</span>
-                        </label>
-                        <label class="voice-option">
-                            <input type="radio" name="voice" value="b">
-                            <span>Voice B</span>
-                        </label>
+        <div class="main-content">
+            <!-- Left Column - Options -->
+            <div class="options-column">
+                <input type="text" id="wordInput" placeholder="Enter a word or concept...">
+                
+                <div class="mode-selection">
+                    <h3>Select Mode</h3>
+                    <div class="mode-buttons">
+                        <button class="mode-btn" data-mode="brainrot">Brainrot Mode</button>
+                        <button class="mode-btn" data-mode="song">Song Mode</button>
+                        <button class="mode-btn" data-mode="chatbot">Chatbot Mode</button>
                     </div>
                 </div>
 
-                <div class="video-selection">
-                    <h3>Select Background Video</h3>
-                    <div class="video-grid">
-                        <div class="video-box active" data-video="v15044gf0000cq3kg37og65o0es57v8g.mp4">
-                            <video src="v15044gf0000cq3kg37og65o0es57v8g.mp4" muted loop></video>
-                            <div class="video-label">Video 1</div>
+                <!-- Mode Options -->
+                <div id="brainrotOptions" class="mode-options" style="display: none;">
+                    <p class="mode-description">Transform any topic into a fun, engaging video that makes learning memorable! Perfect for visual learners who enjoy internet culture and memes.</p>
+                    <div class="voice-selection">
+                        <h3>Select Voice</h3>
+                        <div class="voice-options">
+                            <label class="voice-option">
+                                <input type="radio" name="voice" value="a" checked>
+                                <span>Voice A</span>
+                            </label>
+                            <label class="voice-option">
+                                <input type="radio" name="voice" value="b">
+                                <span>Voice B</span>
+                            </label>
                         </div>
-                        <div class="video-box">
-                            <div class="placeholder">Coming Soon</div>
-                            <div class="video-label">Video 2</div>
-                        </div>
-                        <div class="video-box">
-                            <div class="placeholder">Coming Soon</div>
-                            <div class="video-label">Video 3</div>
+                    </div>
+
+                    <div class="video-selection">
+                        <h3>Select Background Video</h3>
+                        <div class="video-grid">
+                            <div class="video-box active" data-video="v15044gf0000cq3kg37og65o0es57v8g.mp4">
+                                <video src="v15044gf0000cq3kg37og65o0es57v8g.mp4" muted loop></video>
+                                <div class="video-label">Video 1</div>
+                            </div>
+                            <div class="video-box">
+                                <div class="placeholder">Coming Soon</div>
+                                <div class="video-label">Video 2</div>
+                            </div>
+                            <div class="video-box">
+                                <div class="placeholder">Coming Soon</div>
+                                <div class="video-label">Video 3</div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <div id="songOptions" class="mode-options" style="display: none;">
+                    <p class="mode-description">Turn any topic into a catchy song! Choose your preferred music style and make memorizing information more fun and easier through melody.</p>
+                    <div class="song-selection">
+                        <h3>Select Song Style</h3>
+                        <select id="songStyle" class="song-dropdown">
+                            <option value="pop">Pop</option>
+                            <option value="rap">Rap</option>
+                            <option value="rock">Rock</option>
+                            <option value="classical">Classical</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="chatbotOptions" class="mode-options" style="display: none;">
+                    <p class="mode-description">Have an interactive conversation about any topic with your favorite character! Learn through engaging dialogue and personalized explanations.</p>
+                    <div class="character-selection">
+                        <h3>Select Character</h3>
+                        <select id="character" class="character-dropdown">
+                            <option value="friendly">Friendly Helper</option>
+                            <option value="teacher">Teacher</option>
+                            <option value="comedian">Comedian</option>
+                            <option value="scientist">Scientist</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="generateBtn">Generate Mnemonic</button>
             </div>
 
-            <!-- Song Mode Options -->
-            <div id="songOptions" class="mode-options" style="display: none;">
-                <p class="mode-description">Turn any topic into a catchy song! Choose your preferred music style and make memorizing information more fun and easier through melody.</p>
-                <div class="song-selection">
-                    <h3>Select Song Style</h3>
-                    <select id="songStyle" class="song-dropdown">
-                        <option value="pop">Pop</option>
-                        <option value="rap">Rap</option>
-                        <option value="rock">Rock</option>
-                        <option value="classical">Classical</option>
-                    </select>
+            <!-- Right Column - Output and Saved -->
+            <div class="output-column">
+                <div id="loading" style="display: none;">Generating...</div>
+                
+                <!-- Chat Interface -->
+                <div id="chatInterface" class="chat-interface" style="display: none;">
+                    <div id="chatMessages" class="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chatInput" placeholder="Type your message...">
+                        <button id="sendMessage">Send</button>
+                    </div>
+                </div>
+
+                <div id="result"></div>
+                <button id="saveBtn" style="display: none;">Save Mnemonic</button>
+
+                <div class="saved-section">
+                    <h2>Saved Mnemonics</h2>
+                    <div id="savedList"></div>
                 </div>
             </div>
-
-            <!-- Chatbot Mode Options -->
-            <div id="chatbotOptions" class="mode-options" style="display: none;">
-                <p class="mode-description">Have an interactive conversation about any topic with your favorite character! Learn through engaging dialogue and personalized explanations.</p>
-                <div class="character-selection">
-                    <h3>Select Character</h3>
-                    <select id="character" class="character-dropdown">
-                        <option value="friendly">Friendly Helper</option>
-                        <option value="teacher">Teacher</option>
-                        <option value="comedian">Comedian</option>
-                        <option value="scientist">Scientist</option>
-                    </select>
-                </div>
-            </div>
-
-            <button id="generateBtn">Generate Mnemonic</button>
-            <div id="loading" style="display: none;">Generating...</div>
-            
-            <!-- Chat Interface -->
-            <div id="chatInterface" class="chat-interface" style="display: none;">
-                <div id="chatMessages" class="chat-messages"></div>
-                <div class="chat-input-container">
-                    <input type="text" id="chatInput" placeholder="Type your message...">
-                    <button id="sendMessage">Send</button>
-                </div>
-            </div>
-
-            <div id="result"></div>
-            <button id="saveBtn" style="display: none;">Save Mnemonic</button>
-        </div>
-
-        <div class="saved-section">
-            <h2>Saved Mnemonics</h2>
-            <div id="savedList"></div>
         </div>
     </div>
 
