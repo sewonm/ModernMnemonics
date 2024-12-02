@@ -3,119 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uncle Iroh Chatbot</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Modern Mnemonics</title>
+    <link rel="stylesheet" href="static/css/styles.css">
 </head>
 <body>
-    <div class="api-key">
-        <input type="password" id="api-key-input" placeholder="Enter your OpenAI API key">
-        <button id="test-api-key">Test API Key</button>
-    </div>
-
-    <div class="chat-container">
-        <div class="chat-box" id="chat-output"></div>
-        <div class="input-container">
-            <input type="text" id="user-input" placeholder="Ask Uncle Iroh...">
-            <button id="send-btn">Send</button>
+    <div class="container">
+        <h1>Modern Mnemonics</h1>
+        
+        <div class="api-key-section">
+            <input type="password" id="api-key-input" placeholder="Enter your OpenAI API key">
+            <button id="save-api-key">Save API Key</button>
         </div>
-        <div class="steam" style="animation-delay: 1s;"></div>
-        <div class="steam2" style="animation-delay: .5s;"></div>
-        <div class="steam3" style="animation-delay: .5s;"></div>
+
+        <div class="generator-section">
+            <input type="text" id="wordInput" placeholder="Enter a word or concept...">
+            
+            <div class="mode-selection">
+                <h3>Select Mode</h3>
+                <div class="mode-buttons">
+                    <button class="mode-btn" data-mode="brainrot">Brainrot Mode</button>
+                    <button class="mode-btn" data-mode="song">Song Mode</button>
+                    <button class="mode-btn" data-mode="chatbot">Chatbot Mode</button>
+                </div>
+            </div>
+
+            <!-- Brainrot Mode Options -->
+            <div id="brainrotOptions" class="mode-options" style="display: none;">
+                <p class="mode-description">Transform any topic into a fun, engaging video that makes learning memorable! Perfect for visual learners who enjoy internet culture and memes.</p>
+                <div class="voice-selection">
+                    <h3>Select Voice</h3>
+                    <div class="voice-options">
+                        <label class="voice-option">
+                            <input type="radio" name="voice" value="a" checked>
+                            <span>Voice A</span>
+                        </label>
+                        <label class="voice-option">
+                            <input type="radio" name="voice" value="b">
+                            <span>Voice B</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="video-selection">
+                    <h3>Select Background Video</h3>
+                    <select id="backgroundVideo" class="video-dropdown">
+                        <option value="">None</option>
+                        <option value="video1">Video 1</option>
+                        <option value="video2">Video 2</option>
+                        <option value="video3">Video 3</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Song Mode Options -->
+            <div id="songOptions" class="mode-options" style="display: none;">
+                <p class="mode-description">Turn any topic into a catchy song! Choose your preferred music style and make memorizing information more fun and easier through melody.</p>
+                <div class="song-selection">
+                    <h3>Select Song Style</h3>
+                    <select id="songStyle" class="song-dropdown">
+                        <option value="pop">Pop</option>
+                        <option value="rap">Rap</option>
+                        <option value="rock">Rock</option>
+                        <option value="classical">Classical</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Chatbot Mode Options -->
+            <div id="chatbotOptions" class="mode-options" style="display: none;">
+                <p class="mode-description">Have an interactive conversation about any topic with your favorite character! Learn through engaging dialogue and personalized explanations.</p>
+                <div class="character-selection">
+                    <h3>Select Character</h3>
+                    <select id="character" class="character-dropdown">
+                        <option value="friendly">Friendly Helper</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="comedian">Comedian</option>
+                        <option value="scientist">Scientist</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="generateBtn">Generate Mnemonic</button>
+            <div id="loading" style="display: none;">Generating...</div>
+            <div id="result"></div>
+            <button id="saveBtn" style="display: none;">Save Mnemonic</button>
+        </div>
+
+        <div class="saved-section">
+            <h2>Saved Mnemonics</h2>
+            <div id="savedList"></div>
+        </div>
     </div>
 
-    <script>
-        let OPENAI_API_KEY = "";
-    
-        document.getElementById("test-api-key").addEventListener("click", async () => {
-            const apiKeyInput = document.getElementById("api-key-input");
-            const apiKey = apiKeyInput.value.trim();
-            if (!apiKey) {
-                alert("Please enter an API key");
-                return;
-            }
-    
-            try {
-                const response = await fetch('https://api.openai.com/v1/engines', {
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`
-                    }
-                });
-    
-                if (response.ok) {
-                    alert('API key is valid');
-                    OPENAI_API_KEY = apiKey;
-                    sessionStorage.setItem('openai_api_key', apiKey);
-                } else {
-                    alert('Invalid API key');
-                }
-            } catch (error) {
-                console.error('Error testing API key:', error);
-                alert('Error testing API key. Please try again.');
-            }
-        });
-    
-        function getApiKey() {
-            return OPENAI_API_KEY || sessionStorage.getItem('openai_api_key') || '';
-        }
-    
-        async function getResponseFromIroh(userInput) {
-            const messages = [
-                { role: "system", content: "You are Uncle Iroh from Avatar: The Last Airbender." },
-                { role: "user", content: userInput }
-            ];
-    
-            try {
-                const apiKey = getApiKey();
-                if (!apiKey) {
-                    throw new Error("API key not set. Please enter and test your API key.");
-                }
-    
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
-                    },
-                    body: JSON.stringify({
-                        model: "gpt-3.5-turbo",
-                        messages: messages,
-                        max_tokens: 150,
-                        temperature: 0.7
-                    })
-                });
-    
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`API error: ${response.status} ${errorText}`);
-                }
-    
-                const data = await response.json();
-                return data.choices[0].message.content.trim();
-            } catch (error) {
-                console.error("Error fetching response from OpenAI API:", error);
-                return "Sorry, I'm having trouble thinking right now. Please try again.";
-            }
-        }
-    
-        function displayMessage(text, isUser = false) {
-            const chatOutput = document.getElementById("chat-output");
-            const message = document.createElement("div");
-            message.className = isUser ? "user-response" : "uncle-iroh-response";
-            message.textContent = text;
-            chatOutput.appendChild(message);
-            chatOutput.scrollTop = chatOutput.scrollHeight;
-        }
-    
-        document.getElementById("send-btn").addEventListener("click", async () => {
-            const userInput = document.getElementById("user-input").value;
-            if (!userInput.trim()) return;
-    
-            displayMessage(userInput, true);
-            document.getElementById("user-input").value = "";
-    
-            const irohResponse = await getResponseFromIroh(userInput);
-            displayMessage(irohResponse);
-        });
-    </script>
+    <script src="static/js/config.js"></script>
+    <script src="static/js/main.js"></script>
 </body>
 </html>
