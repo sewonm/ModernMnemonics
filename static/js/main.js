@@ -44,17 +44,91 @@ class MnemonicGenerator {
     }
 
     async generateSongMnemonic(word) {
+        // Predefined song templates
+        const songTemplates = {
+            pop: {
+                title: "APT by Rose and Bruno Mars",
+                lyrics: `아파트, 아파트, 아파트, 아파트
+아파트, 아파트, uh, uh-huh, uh-huh
+아파트, 아파트, 아파트, 아파트
+아파트, 아파트, uh, uh-huh, uh-huh
+
+Kissy face, kissy face sent to your phone, but
+I'm trying to kiss your lips for real (uh-huh, uh-huh)
+Red hearts, red hearts, that's what I'm on, yeah
+Come give me somethin' I can feel, oh-oh-oh
+
+Don't you want me like I want you, baby?
+Don't you need me like I need you now?
+Sleep tomorrow, but tonight go crazy
+All you gotta do is just meet me at the
+
+아파트, 아파트, 아파트, 아파트
+아파트, 아파트, uh, uh-huh, uh-huh
+아파트, 아파트, 아파트, 아파트
+아파트, 아파트, uh, uh-huh, uh-huh`
+            },
+            rap: {
+                title: "DNA by Kendrick Lamar",
+                lyrics: `I got, I got, I got, I got
+Loyalty, got royalty inside my DNA
+Quarter piece, got war, and peace inside my DNA
+I got power, poison, pain, and joy inside my DNA
+I got hustle, though, ambition flow inside my DNA
+
+I was born like this
+Since one like this, immaculate conception
+I transform like this, perform like this
+Was Yeshua new weapon
+
+I don't contemplate, I meditate
+Then off your-, off your head
+This that put-the-kids-to-bed
+
+This that I got, I got, I got, I got
+Realness, I just kill sh- 'cause it's in my DNA
+I got millions, I got riches buildin' in my DNA
+I got dark, I got evil that rot inside my DNA
+I got off, I got troublesome heart inside my DNA
+I just win again, then, win again like Wimbledon I serve`
+            },
+            nursery: {
+                title: "Mary Had a Little Lamb",
+                lyrics: `Mary had a little lamb
+It's fleece was white as snow, yeah
+Everywhere the child went
+The lamb, the lamb was sure to go, yeah
+
+He followed her to school one day
+And broke the teacher's rule
+And what a time did they have
+That day at school
+
+Tisket, tasket, baby alright
+A green and yellow basket, now
+I wrote a letter to my baby
+And on my way I passed it, now
+Hit it`
+            }
+        };
+
+        // Get the selected song style
+        const songStyle = this.currentSong;
+        const template = songTemplates[songStyle];
+
+        // Generate the song based on the template
         const response = await this.callOpenAI([
             {
                 role: "system",
-                content: `You are a musical composer creating educational songs in ${this.currentSong} style.`
+                content: `You are a professional songwriter specializing in ${songStyle} music. Create lyrics in the exact style of the following song, but about the topic provided. Maintain the same rhythm, flow, and structure. Reference song: ${template.title}\n\n${template.lyrics}`
             },
             {
                 role: "user",
-                content: `Create memorable ${this.currentSong} style song lyrics about: ${word}. Make it catchy and educational.`
+                content: `Write lyrics about: ${word}`
             }
         ]);
-        return response;
+
+        return `<div class="title">🎵 ${template.title} Style 🎵</div>\n\n${response}`;
     }
 
     async initiateChatbotConversation(word) {
@@ -211,17 +285,36 @@ function animateText(text, element) {
 }
 
 function formatLyrics(text) {
-    // Split the text into sections (verses and chorus)
-    const sections = text.split('\n\n');
-    let formattedText = '<div class="title">🎵 Educational Song 🎵</div>\n\n';
+    // Split into title and lyrics
+    const parts = text.split('\n\n');
+    const title = parts[0];
+    const lyrics = parts.slice(1).join('\n\n');
+
+    // Split the lyrics into sections
+    const sections = lyrics.split('\n\n');
+    let formattedText = `${title}\n\n`;  // Keep the title
     
     sections.forEach((section, index) => {
-        if (section.toLowerCase().includes('chorus') || section.toLowerCase().includes('[chorus]')) {
+        // Add extra newline before each section for better spacing
+        formattedText += '\n';
+        
+        if (section.toLowerCase().includes('chorus') || 
+            section.toLowerCase().includes('[chorus]')) {
             // Format chorus
-            formattedText += `<div class="chorus">${section.replace('[Chorus]', '').replace('Chorus:', '').trim()}</div>\n\n`;
+            formattedText += `<div class="chorus">${
+                section.replace('[Chorus]', '')
+                      .replace('Chorus:', '')
+                      .trim()
+                      .split('\n')
+                      .join('\n')
+            }</div>\n`;
         } else {
             // Format verse
-            formattedText += `<div class="verse">${section.trim()}</div>\n\n`;
+            formattedText += `<div class="verse">${
+                section.trim()
+                      .split('\n')
+                      .join('\n')
+            }</div>\n`;
         }
     });
     
