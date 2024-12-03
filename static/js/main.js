@@ -424,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
     generateBtn.addEventListener('click', async () => {
         const word = wordInput.value.trim();
         if (!word) {
-            alert('Please enter a word');
+            alert('Please enter a word or concept');
             return;
         }
 
@@ -435,18 +435,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             loadingSpinner.style.display = 'block';
-            generateBtn.disabled = true;
-            
-            const response = await generator.generateMnemonic(word);
+            resultDiv.innerHTML = '';
             
             if (generator.currentMode === 'chatbot') {
-                // Show chat interface for chatbot mode
-                resultDiv.style.display = 'none';
                 chatInterface.style.display = 'block';
                 videoResult.style.display = 'none';
-                saveBtn.style.display = 'none';  // Hide save button in chatbot mode
-                chatMessages.innerHTML = '';
-                addChatMessage(response);
+                resultDiv.style.display = 'none';
+                saveBtn.style.display = 'none';
+
+                // Set initial character appearance
+                const character = characterSelect.value;
+                generator.currentCharacter = character;
+                chatInterface.className = 'chat-interface ' + character;
+                
+                // Add character image
+                const existingCharacter = chatInterface.querySelector('.chat-character');
+                if (existingCharacter) {
+                    existingCharacter.remove();
+                }
+                const characterImg = document.createElement('img');
+                characterImg.className = 'chat-character';
+                characterImg.src = `static/images/${character}-character.png`;
+                characterImg.alt = character;
+                chatInterface.appendChild(characterImg);
+
+                const response = await generator.initiateChatbotConversation(word);
+                addChatMessage(response, false);
             } else if (generator.currentMode === 'brainrot') {
                 // Show video result for brainrot mode
                 resultDiv.style.display = 'none';
@@ -483,7 +497,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } finally {
             loadingSpinner.style.display = 'none';
-            generateBtn.disabled = false;
         }
     });
 

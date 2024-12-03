@@ -384,7 +384,7 @@ h3 {
 /* Chat Interface Styles */
 .chat-interface {
     position: relative;
-    height: 600px;
+    height: 700px;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -435,8 +435,23 @@ h3 {
     z-index: 2;
     display: flex;
     gap: 10px;
-    padding: 10px;
+    padding: 15px;
     background-color: rgba(255, 255, 255, 0.9);
+}
+
+#chatInput {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    height: 45px;
+}
+
+#sendMessage {
+    padding: 8px 20px;
+    min-width: 70px;
+    font-size: 14px;
 }
 
 /* Character-specific backgrounds */
