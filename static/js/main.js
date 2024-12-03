@@ -6,7 +6,7 @@ class MnemonicGenerator {
         this.currentVoice = 'a';
         this.currentVideo = '';
         this.currentSong = 'pop';
-        this.currentCharacter = 'friendly';
+        this.currentCharacter = 'naruto';
         this.chatHistory = [];
         this.apiKey = localStorage.getItem('openai_api_key') || '';
     }
@@ -228,6 +228,12 @@ document.addEventListener('DOMContentLoaded', () => {
             generator.currentMode = btn.dataset.mode;
             showModeOptions(btn.dataset.mode);
         });
+    });
+
+    // Character selection handler
+    const characterSelect = document.getElementById('character');
+    characterSelect.addEventListener('change', (e) => {
+        generator.currentCharacter = e.target.value;
     });
 
     // Chat interface handlers
