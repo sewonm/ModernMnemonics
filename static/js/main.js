@@ -5,8 +5,8 @@ class MnemonicGenerator {
         this.currentMode = 'brainrot';
         this.currentVoice = 'a';
         this.currentVideo = '';
-        this.currentSong = 'pop';
-        this.currentCharacter = 'naruto';
+        this.currentSong = 'pop';  // Default song style
+        this.currentCharacter = 'teacher';
         this.chatHistory = [];
         this.apiKey = localStorage.getItem('openai_api_key') || '';
     }
@@ -17,15 +17,15 @@ class MnemonicGenerator {
     }
 
     async generateMnemonic(word) {
-        switch(this.currentMode) {
-            case 'brainrot':
-                return this.generateBrainrotMnemonic(word);
+        switch (this.currentMode) {
             case 'song':
-                return this.generateSongMnemonic(word);
+                return await this.generateSongMnemonic(word);
+            case 'brainrot':
+                return await this.generateBrainrotMnemonic(word);
             case 'chatbot':
-                return this.initiateChatbotConversation(word);
+                return await this.initiateChatbotConversation(word);
             default:
-                return this.generateBrainrotMnemonic(word);
+                return 'Please select a valid mode';
         }
     }
 
@@ -44,100 +44,49 @@ class MnemonicGenerator {
     }
 
     async generateSongMnemonic(word) {
-        // Predefined song templates
         const songTemplates = {
             pop: {
                 title: "APT by Rose and Bruno Mars",
-                lyrics: `아파트, 아파트, 아파트, 아파트
-아파트, 아파트, uh, uh-huh, uh-huh
-아파트, 아파트, 아파트, 아파트
-아파트, 아파트, uh, uh-huh, uh-huh
-
-Kissy face, kissy face sent to your phone, but
-I'm trying to kiss your lips for real (uh-huh, uh-huh)
-Red hearts, red hearts, that's what I'm on, yeah
-Come give me somethin' I can feel, oh-oh-oh
-
-Don't you want me like I want you, baby?
-Don't you need me like I need you now?
-Sleep tomorrow, but tonight go crazy
-All you gotta do is just meet me at the
-
-아파트, 아파트, 아파트, 아파트
-아파트, 아파트, uh, uh-huh, uh-huh
-아파트, 아파트, 아파트, 아파트
-아파트, 아파트, uh, uh-huh, uh-huh`
+                style: "pop song with Korean words",
+                pattern: "repeating patterns and catchy hooks"
             },
             rap: {
                 title: "DNA by Kendrick Lamar",
-                lyrics: `I got, I got, I got, I got
-Loyalty, got royalty inside my DNA
-Quarter piece, got war, and peace inside my DNA
-I got power, poison, pain, and joy inside my DNA
-I got hustle, though, ambition flow inside my DNA
-
-I was born like this
-Since one like this, immaculate conception
-I transform like this, perform like this
-Was Yeshua new weapon
-
-I don't contemplate, I meditate
-Then off your-, off your head
-This that put-the-kids-to-bed
-
-This that I got, I got, I got, I got
-Realness, I just kill sh- 'cause it's in my DNA
-I got millions, I got riches buildin' in my DNA
-I got dark, I got evil that rot inside my DNA
-I got off, I got troublesome heart inside my DNA
-I just win again, then, win again like Wimbledon I serve`
+                style: "aggressive rap",
+                pattern: "repeated 'I got' phrases and intense delivery"
             },
             nursery: {
                 title: "Mary Had a Little Lamb",
-                lyrics: `Mary had a little lamb
-It's fleece was white as snow, yeah
-Everywhere the child went
-The lamb, the lamb was sure to go, yeah
-
-He followed her to school one day
-And broke the teacher's rule
-And what a time did they have
-That day at school
-
-Tisket, tasket, baby alright
-A green and yellow basket, now
-I wrote a letter to my baby
-And on my way I passed it, now
-Hit it`
+                style: "simple nursery rhyme",
+                pattern: "playful repetition and 'yeah' additions"
             }
         };
 
-        // Get the selected song style and template
-        const songStyle = this.currentSong;
-        const template = songTemplates[songStyle];
-
-        let prompt;
-        switch(songStyle) {
-            case 'pop':
-                prompt = `Create a pop song about ${word} following the exact structure and style of "APT by Rose and Bruno Mars". Use the same rhythm and flow, including repeating patterns and Korean words where appropriate. Keep the same number of lines and similar line lengths.`;
-                break;
-            case 'rap':
-                prompt = `Create a rap song about ${word} following the exact structure and style of Kendrick Lamar's "DNA". Use the same aggressive flow, repetitive patterns, and introspective style. Keep the same number of lines and similar line lengths. Include the repeated "I got" pattern and maintain the intense delivery style.`;
-                break;
-            case 'nursery':
-                prompt = `Create a nursery rhyme about ${word} following the exact structure and style of "Mary Had a Little Lamb". Use the same simple, repetitive pattern and child-friendly tone. Keep the same number of lines and similar line lengths. Include playful elements and the "yeah" additions like in the example.`;
-                break;
+        const style = this.currentSong;
+        if (!songTemplates[style]) {
+            console.error('Invalid song style:', style);
+            return 'Error: Invalid song style selected';
         }
 
-        // Generate the song based on the template and style-specific prompt
+        const template = songTemplates[style];
+        const systemPrompt = `You are writing a ${template.style} about ${word}. 
+Your response should follow these rules:
+1. Match the exact style of ${template.title}
+2. Include ${template.pattern}
+3. Keep the same rhythm and flow
+4. Format verses and chorus clearly with line breaks
+5. For pop style, include Korean words like "아파트"
+6. For rap style, use Kendrick's DNA flow
+7. For nursery style, keep it simple and child-friendly`;
+
         const response = await this.callOpenAI([
             {
                 role: "system",
-                content: `You are a professional songwriter specializing in ${songStyle} music. Here's the reference song to match exactly:\n\n${template.lyrics}`
+                content: systemPrompt
             },
             {
                 role: "user",
-                content: prompt
+                content: `Write a ${template.style} about ${word} in the exact style of ${template.title}.`
             }
         ]);
 
@@ -246,7 +195,8 @@ Hit it`
         const prompts = {
             'naruto': "You are Naruto Uzumaki, the energetic ninja who never gives up! Respond with enthusiasm, use 'dattebayo' occasionally, and reference your ninja way and experiences. Help others learn while maintaining your determined and optimistic personality. Use ninja analogies when explaining concepts.",
             'lebron': "You are LeBron James, one of the greatest basketball players of all time. Share your knowledge while drawing parallels to basketball and your career experiences. Be motivational, professional, and occasionally reference your championships and career achievements. Use sports analogies to explain concepts.",
-            'batman': "You are Batman, the world's greatest detective and protector of Gotham City. Respond in a deep, serious tone while drawing from your vast knowledge and experience. Use analogies related to crime-solving, justice, and your gadgets to explain concepts. Occasionally reference your experiences in Gotham."
+            'batman': "You are Batman, the world's greatest detective and protector of Gotham City. Respond in a deep, serious tone while drawing from your vast knowledge and experience. Use analogies related to crime-solving, justice, and your gadgets to explain concepts. Occasionally reference your experiences in Gotham.",
+            'teacher': "You are a teacher, here to help students learn and understand new concepts. Respond in a clear, concise manner, using examples and analogies to explain complex ideas. Be patient, encouraging, and supportive in your responses."
         };
         return prompts[this.currentCharacter] || prompts['naruto'];
     }
