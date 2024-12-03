@@ -181,6 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatInput = document.getElementById('chatInput');
     const sendMessageBtn = document.getElementById('sendMessage');
     const modeButtons = document.querySelectorAll('.mode-btn');
+    const videoResult = document.getElementById('videoResult');
 
     function showModeOptions(mode) {
         // Hide all mode options and chat interface
@@ -188,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
             option.style.display = 'none';
         });
         chatInterface.style.display = 'none';
+        videoResult.style.display = 'none';
         resultDiv.style.display = 'block';
         
         // Show the options for the selected mode
@@ -280,10 +282,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Show chat interface for chatbot mode
                 resultDiv.style.display = 'none';
                 chatInterface.style.display = 'block';
+                videoResult.style.display = 'none';
                 chatMessages.innerHTML = '';
                 addChatMessage(response);
+            } else if (generator.currentMode === 'brainrot') {
+                // Show video result for brainrot mode
+                resultDiv.style.display = 'none';
+                chatInterface.style.display = 'none';
+                videoResult.style.display = 'block';
+                
+                // Get the selected video source
+                const selectedVideo = document.querySelector('.video-box.active');
+                const videoSrc = selectedVideo ? selectedVideo.dataset.video : '';
+                
+                // Set up the video and text
+                const resultVideoEl = document.getElementById('resultVideo');
+                const videoTextEl = document.getElementById('videoText');
+                
+                resultVideoEl.src = videoSrc;
+                resultVideoEl.play();
+                videoTextEl.textContent = response;
+                
+                saveBtn.style.display = 'block';
             } else {
                 // Show regular result for other modes
+                resultDiv.style.display = 'block';
+                chatInterface.style.display = 'none';
+                videoResult.style.display = 'none';
                 resultDiv.innerHTML = `<p class="mnemonic">${response}</p>`;
                 saveBtn.style.display = 'block';
             }
