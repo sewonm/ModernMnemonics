@@ -32,6 +32,16 @@ h1 {
     margin-bottom: 2rem;
 }
 
+.site-description {
+    text-align: center;
+    color: var(--secondary-color);
+    max-width: 800px;
+    margin: 0 auto 2rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    padding: 0 20px;
+}
+
 h2 {
     color: var(--secondary-color);
     margin: 1.5rem 0;
@@ -321,16 +331,23 @@ h3 {
 
 .video-text {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: rgba(0, 0, 0, 0.5);
-    color: #FFE81F; /* Star Wars yellow */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.video-text > div {
+    color: #FFE81F;
     padding: 20px;
     border-radius: 8px;
     max-width: 90%;
     text-align: center;
-    font-size: 2rem;
+    font-size: 2.5rem;
     line-height: 1.5;
     font-weight: 600;
     text-shadow: 
@@ -338,18 +355,8 @@ h3 {
         2px -2px 0 #000,
         -2px 2px 0 #000,
         2px 2px 0 #000;
-}
-
-.video-text span {
-    display: inline-block;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.video-text span.visible {
-    opacity: 1;
-    transform: translateY(0);
+    background-color: rgba(0, 0, 0, 0.5);
+    transition: opacity 0.3s ease;
 }
 
 /* Chat Interface Styles */

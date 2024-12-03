@@ -167,6 +167,9 @@ class MnemonicGenerator {
 
 // Add this function at the top level of your file
 function animateText(text, element) {
+    // Remove any bracketed text
+    text = text.replace(/\[.*?\]/g, '').trim();
+    
     // Clear previous content
     element.innerHTML = '';
     
@@ -185,31 +188,26 @@ function animateText(text, element) {
     if (currentChunk.length > 0) {
         chunks.push(currentChunk.join(' '));
     }
+
+    // Create and position the text container
+    const textContainer = document.createElement('div');
+    textContainer.style.position = 'absolute';
+    textContainer.style.top = '10%';  // Position near the top
+    textContainer.style.left = '50%';
+    textContainer.style.transform = 'translateX(-50%)';
+    textContainer.style.width = '90%';
+    textContainer.style.textAlign = 'center';
+    element.appendChild(textContainer);
+
+    let currentIndex = 0;
     
-    // Create spans for each chunk
-    chunks.forEach((chunk, index) => {
-        const span = document.createElement('span');
-        span.textContent = chunk + ' ';
-        element.appendChild(span);
-    });
+    function showNextChunk() {
+        textContainer.textContent = chunks[currentIndex];
+        currentIndex = (currentIndex + 1) % chunks.length;
+        setTimeout(showNextChunk, 2000); // Show each chunk for 2 seconds
+    }
     
-    // Animate each chunk
-    const spans = element.querySelectorAll('span');
-    let delay = 0;
-    spans.forEach((span, index) => {
-        setTimeout(() => {
-            span.classList.add('visible');
-            
-            // If this is the last span, prepare for loop
-            if (index === spans.length - 1) {
-                setTimeout(() => {
-                    spans.forEach(s => s.classList.remove('visible'));
-                    setTimeout(() => animateText(text, element), 1000); // Restart after 1 second
-                }, 3000); // Wait 3 seconds before resetting
-            }
-        }, delay);
-        delay += 1000; // Show next chunk after 1 second
-    });
+    showNextChunk();
 }
 
 // DOM interaction code
@@ -238,6 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatInterface.style.display = 'none';
         videoResult.style.display = 'none';
         resultDiv.style.display = 'block';
+        saveBtn.style.display = 'none';  // Hide save button by default
         
         // Show the options for the selected mode
         const optionsToShow = document.getElementById(`${mode}Options`);
@@ -330,6 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultDiv.style.display = 'none';
                 chatInterface.style.display = 'block';
                 videoResult.style.display = 'none';
+                saveBtn.style.display = 'none';  // Hide save button in chatbot mode
                 chatMessages.innerHTML = '';
                 addChatMessage(response);
             } else if (generator.currentMode === 'brainrot') {
@@ -337,6 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultDiv.style.display = 'none';
                 chatInterface.style.display = 'none';
                 videoResult.style.display = 'block';
+                saveBtn.style.display = 'block';  // Show save button in brainrot mode
                 
                 // Get the selected video source
                 const selectedVideo = document.querySelector('.video-box.active');
@@ -351,15 +352,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Start text animation
                 animateText(response, videoTextEl);
-                
-                saveBtn.style.display = 'block';
             } else {
-                // Show regular result for other modes
+                // Show regular result for song mode
                 resultDiv.style.display = 'block';
                 chatInterface.style.display = 'none';
                 videoResult.style.display = 'none';
+                saveBtn.style.display = 'block';  // Show save button in song mode
                 resultDiv.innerHTML = `<p class="mnemonic">${response}</p>`;
-                saveBtn.style.display = 'block';
             }
         } catch (error) {
             resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
