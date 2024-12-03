@@ -479,6 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultVideoEl.play();
                 
                 // Start text animation
+                const response = await generator.generateMnemonic(word);
                 animateText(response, videoTextEl);
             } else {
                 // Show regular result for song mode
@@ -486,6 +487,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 chatInterface.style.display = 'none';
                 videoResult.style.display = 'none';
                 saveBtn.style.display = 'block';  // Show save button in song mode
+                
+                const response = await generator.generateMnemonic(word);
                 const formattedLyrics = formatLyrics(response);
                 resultDiv.innerHTML = `<div class="mnemonic">${formattedLyrics}</div>`;
             }

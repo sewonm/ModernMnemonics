@@ -445,13 +445,16 @@ h3 {
     border: 1px solid #ddd;
     border-radius: var(--border-radius);
     font-size: 16px;
-    height: 45px;
+    height: 50px;
+    min-width: 300px;
 }
 
 #sendMessage {
-    padding: 8px 20px;
-    min-width: 70px;
+    padding: 8px 15px;
+    min-width: 60px;
     font-size: 14px;
+    height: 40px;
+    align-self: center;
 }
 
 /* Character-specific backgrounds */
