@@ -6,7 +6,7 @@ class MnemonicGenerator {
         this.currentVoice = 'a';
         this.currentVideo = '';
         this.currentSong = 'pop';  // Default song style
-        this.currentCharacter = 'teacher';
+        this.currentCharacter = 'naruto';  // Set default character to naruto
         this.chatHistory = [];
         this.apiKey = localStorage.getItem('openai_api_key') || '';
     }
@@ -46,19 +46,19 @@ class MnemonicGenerator {
     async generateSongMnemonic(word) {
         const songTemplates = {
             pop: {
-                title: "APT by Rose and Bruno Mars",
-                style: "pop song with Korean words",
-                pattern: "repeating patterns and catchy hooks"
+                title: "APT by ROSE",
+                style: "K-pop song with Rose's style",
+                pattern: "Follow Rose's APT song structure with its unique rhythm and flow. Match the exact melody and style of APT, including the catchy chorus and verse patterns."
             },
             rap: {
                 title: "DNA by Kendrick Lamar",
-                style: "aggressive rap",
-                pattern: "repeated 'I got' phrases and intense delivery"
+                style: "aggressive rap with Kendrick's style",
+                pattern: "Use Kendrick's DNA flow with its intense delivery, rapid-fire verses, and the repeated 'I got' phrases. Match the exact rhythm and energy of DNA."
             },
             nursery: {
                 title: "Mary Had a Little Lamb",
                 style: "simple nursery rhyme",
-                pattern: "playful repetition and 'yeah' additions"
+                pattern: "Use simple, repetitive patterns like Mary Had a Little Lamb. Keep the same rhythm and melody, making it easy for children to remember."
             }
         };
 
@@ -71,13 +71,13 @@ class MnemonicGenerator {
         const template = songTemplates[style];
         const systemPrompt = `You are writing a ${template.style} about ${word}. 
 Your response should follow these rules:
-1. Match the exact style of ${template.title}
-2. Include ${template.pattern}
-3. Keep the same rhythm and flow
+1. Match the EXACT style, flow, and melody of ${template.title}
+2. ${template.pattern}
+3. Keep the exact same rhythm and structure as the original song
 4. Format verses and chorus clearly with line breaks
-5. For pop style, include Korean words like "아파트"
-6. For rap style, use Kendrick's DNA flow
-7. For nursery style, keep it simple and child-friendly`;
+5. Make sure each line matches the syllable count and rhythm of the original song
+6. Use similar rhyme schemes and patterns as the original song
+7. Include a clear chorus that repeats with the same pattern as the original`;
 
         const response = await this.callOpenAI([
             {
@@ -86,7 +86,7 @@ Your response should follow these rules:
             },
             {
                 role: "user",
-                content: `Write a ${template.style} about ${word} in the exact style of ${template.title}.`
+                content: `Write lyrics about ${word} that EXACTLY match the style, flow, and melody of ${template.title}. Make sure it can be sung to the same tune.`
             }
         ]);
 
@@ -195,8 +195,7 @@ Your response should follow these rules:
         const prompts = {
             'naruto': "You are Naruto Uzumaki, the energetic ninja who never gives up! Respond with enthusiasm, use 'dattebayo' occasionally, and reference your ninja way and experiences. Help others learn while maintaining your determined and optimistic personality. Use ninja analogies when explaining concepts.",
             'lebron': "You are LeBron James, one of the greatest basketball players of all time. Share your knowledge while drawing parallels to basketball and your career experiences. Be motivational, professional, and occasionally reference your championships and career achievements. Use sports analogies to explain concepts.",
-            'batman': "You are Batman, the world's greatest detective and protector of Gotham City. Respond in a deep, serious tone while drawing from your vast knowledge and experience. Use analogies related to crime-solving, justice, and your gadgets to explain concepts. Occasionally reference your experiences in Gotham.",
-            'teacher': "You are a teacher, here to help students learn and understand new concepts. Respond in a clear, concise manner, using examples and analogies to explain complex ideas. Be patient, encouraging, and supportive in your responses."
+            'batman': "You are Batman, the world's greatest detective and protector of Gotham City. Respond in a deep, serious tone while drawing from your vast knowledge and experience. Use analogies related to crime-solving, justice, and your gadgets to explain concepts. Occasionally reference your experiences in Gotham."
         };
         return prompts[this.currentCharacter] || prompts['naruto'];
     }
