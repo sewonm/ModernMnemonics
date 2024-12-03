@@ -165,6 +165,53 @@ class MnemonicGenerator {
     }
 }
 
+// Add this function at the top level of your file
+function animateText(text, element) {
+    // Clear previous content
+    element.innerHTML = '';
+    
+    // Split text into chunks of 3-5 words
+    const words = text.split(' ');
+    const chunks = [];
+    let currentChunk = [];
+    
+    words.forEach(word => {
+        currentChunk.push(word);
+        if (currentChunk.length >= (Math.random() * 3 + 3)) { // Random 3-5 words
+            chunks.push(currentChunk.join(' '));
+            currentChunk = [];
+        }
+    });
+    if (currentChunk.length > 0) {
+        chunks.push(currentChunk.join(' '));
+    }
+    
+    // Create spans for each chunk
+    chunks.forEach((chunk, index) => {
+        const span = document.createElement('span');
+        span.textContent = chunk + ' ';
+        element.appendChild(span);
+    });
+    
+    // Animate each chunk
+    const spans = element.querySelectorAll('span');
+    let delay = 0;
+    spans.forEach((span, index) => {
+        setTimeout(() => {
+            span.classList.add('visible');
+            
+            // If this is the last span, prepare for loop
+            if (index === spans.length - 1) {
+                setTimeout(() => {
+                    spans.forEach(s => s.classList.remove('visible'));
+                    setTimeout(() => animateText(text, element), 1000); // Restart after 1 second
+                }, 3000); // Wait 3 seconds before resetting
+            }
+        }, delay);
+        delay += 1000; // Show next chunk after 1 second
+    });
+}
+
 // DOM interaction code
 document.addEventListener('DOMContentLoaded', () => {
     const generator = new MnemonicGenerator();
@@ -301,7 +348,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 resultVideoEl.src = videoSrc;
                 resultVideoEl.play();
-                videoTextEl.textContent = response;
+                
+                // Start text animation
+                animateText(response, videoTextEl);
                 
                 saveBtn.style.display = 'block';
             } else {
