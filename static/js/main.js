@@ -44,54 +44,62 @@ class MnemonicGenerator {
     }
 
     async generateSongMnemonic(word) {
-        const songTemplates = {
+        const songStyles = {
             'pop': {
                 title: "On The Ground by ROSE",
-                style: "K-pop solo artist style",
-                pattern: "Use ROSE's signature style from 'On The Ground' with its emotional delivery and powerful vocals. Match the exact rhythm and flow of the original song."
+                artist: "ROSE",
+                style: "K-pop solo artist",
+                example: "On The Ground",
+                pattern: "emotional delivery with powerful vocals, focusing on self-reflection and growth"
             },
             'rap': {
                 title: "DNA by Kendrick Lamar",
-                style: "aggressive rap with Kendrick's style",
-                pattern: "Match Kendrick's DNA flow exactly - rapid-fire verses with 'I got' repetition. Keep the same intense energy and rhythm as the original DNA song."
+                artist: "Kendrick Lamar",
+                style: "conscious rap",
+                example: "DNA",
+                pattern: "rapid-fire verses with intense delivery and complex wordplay"
             },
             'nursery': {
                 title: "Twinkle Twinkle Little Star",
-                style: "classic nursery rhyme",
-                pattern: "Use the simple, memorable melody of Twinkle Twinkle Little Star. Keep the same rhythm and rhyme scheme as the original nursery rhyme."
+                artist: "Traditional",
+                style: "nursery rhyme",
+                example: "Twinkle Twinkle Little Star",
+                pattern: "simple, repetitive melody with basic rhyming structure"
             }
         };
 
         const style = this.currentSong;
-        console.log('Current song style:', style);  // Debug log
+        console.log('Generating song in style:', style); // Debug log
         
-        if (!songTemplates[style]) {
+        if (!songStyles[style]) {
             throw new Error(`Invalid song style selected: ${style}`);
         }
 
-        const template = songTemplates[style];
-        const systemPrompt = `You are writing a song about ${word} in the exact style of ${template.title}. 
-Your response must strictly follow these rules:
-1. Use the EXACT same melody, rhythm, and flow as ${template.title}
-2. ${template.pattern}
-3. Each line must have the same number of syllables as the original song
-4. Use the same rhyme scheme as the original song
-5. Include a chorus that matches the original song's structure
-6. Format output with clear verse and chorus sections
-7. Make sure every line can be sung to the original melody`;
+        const template = songStyles[style];
+        const prompt = `Create a song about "${word}" in the style of ${template.title} by ${template.artist}.
+
+Style Instructions:
+1. Match the exact style of ${template.example}
+2. Use ${template.pattern}
+3. Keep the same rhythm and flow as the original
+4. Make it educational but catchy
+5. Include a chorus and verses
+6. Make sure it can be sung to the original melody
+
+Format the output with clear VERSE and CHORUS sections.`;
 
         const response = await this.callOpenAI([
             {
                 role: "system",
-                content: systemPrompt
+                content: `You are a professional songwriter specializing in ${template.style} music.`
             },
             {
                 role: "user",
-                content: `Write lyrics about ${word} that match the exact melody and style of ${template.title}. The lyrics must be singable to the original tune.`
+                content: prompt
             }
         ]);
 
-        return `<div class="title">🎵 ${template.title} Style 🎵</div>\n\n${response}`;
+        return `<div class="song-title">🎵 ${template.title} Style 🎵</div>\n\n${response}`;
     }
 
     async initiateChatbotConversation(word) {
@@ -348,9 +356,28 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             modeButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            generator.currentMode = btn.dataset.mode;
-            showModeOptions(btn.dataset.mode);
+            const mode = btn.dataset.mode;
+            generator.currentMode = mode;
+            showModeOptions(mode);
+            
+            // Reset results when switching modes
+            resultDiv.style.display = 'none';
+            chatInterface.style.display = 'none';
+            videoResult.style.display = 'none';
+            
+            // Update song style if in song mode
+            if (mode === 'song') {
+                const songStyleSelect = document.getElementById('songStyle');
+                generator.currentSong = songStyleSelect.value;
+            }
         });
+    });
+
+    // Song style selection
+    const songStyleSelect = document.getElementById('songStyle');
+    songStyleSelect.addEventListener('change', (e) => {
+        generator.currentSong = e.target.value;
+        console.log('Song style changed to:', e.target.value); // Debug log
     });
 
     // Character selection handling
@@ -560,27 +587,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // Video selection handling
     const videoBoxes = document.querySelectorAll('.video-box');
     videoBoxes.forEach(box => {
+        const video = box.querySelector('video');
+        
         box.addEventListener('click', () => {
-            // Update active state
             videoBoxes.forEach(b => b.classList.remove('active'));
             box.classList.add('active');
             
-            // Store the selected video source
-            const video = box.querySelector('video');
-            generator.currentVideo = video.src;
+            if (video) {
+                generator.currentVideo = video.src;
+                
+                // Update result video if it exists
+                const resultVideo = document.getElementById('resultVideo');
+                if (resultVideo) {
+                    resultVideo.src = video.src;
+                    resultVideo.load(); // Reload the video
+                }
+            }
         });
     });
 
-    // Set initial video
-    if (videoBoxes.length > 0) {
-        const firstVideo = videoBoxes[0];
-        firstVideo.classList.add('active');
-        const video = firstVideo.querySelector('video');
-        generator.currentVideo = video.src;
+    // Initialize video selection
+    const firstVideoBox = videoBoxes[0];
+    if (firstVideoBox) {
+        const firstVideo = firstVideoBox.querySelector('video');
+        if (firstVideo) {
+            generator.currentVideo = firstVideo.src;
+        }
     }
 
     // Add event listener for song style changes
-    const songStyleSelect = document.getElementById('songStyle');
     songStyleSelect.addEventListener('change', (e) => {
         generator.currentSong = e.target.value;
     });
