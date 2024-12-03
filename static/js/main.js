@@ -320,8 +320,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addChatMessage(message, isUser = false) {
+        const chatMessages = document.getElementById('chatMessages');
         const messageDiv = document.createElement('div');
-        messageDiv.className = `chat-message ${isUser ? 'user-message' : 'bot-message'}`;
+        messageDiv.className = `chat-message ${isUser ? 'user' : 'bot'}`;
         messageDiv.textContent = message;
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -352,10 +353,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Character selection handler
+    // Character selection handling
     const characterSelect = document.getElementById('character');
     characterSelect.addEventListener('change', (e) => {
-        generator.currentCharacter = e.target.value;
+        const character = e.target.value;
+        generator.currentCharacter = character;
+        
+        // Update chat interface appearance
+        const chatInterface = document.getElementById('chatInterface');
+        chatInterface.className = 'chat-interface ' + character;
+        
+        // Remove existing character image if any
+        const existingCharacter = chatInterface.querySelector('.chat-character');
+        if (existingCharacter) {
+            existingCharacter.remove();
+        }
+        
+        // Add new character image
+        const characterImg = document.createElement('img');
+        characterImg.className = 'chat-character';
+        characterImg.src = `static/images/${character}-character.png`;
+        characterImg.alt = character;
+        chatInterface.appendChild(characterImg);
     });
 
     // Add event listener for song style changes
