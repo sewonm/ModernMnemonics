@@ -46,7 +46,7 @@ class MnemonicGenerator {
     async generateSongMnemonic(word) {
         const songTemplates = {
             pop: {
-                title: "APT by ROSE",
+                title: "APT by ROSE and Bruno Mars",
                 style: "K-pop song with Rose's style",
                 pattern: "Follow Rose's APT song structure with its unique rhythm and flow. Match the exact melody and style of APT, including the catchy chorus and verse patterns."
             },
@@ -481,15 +481,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Start text animation
                 const response = await generator.generateMnemonic(word);
                 animateText(response, videoTextEl);
-            } else {
+            } else if (generator.currentMode === 'song') {
                 // Show regular result for song mode
                 resultDiv.style.display = 'block';
                 chatInterface.style.display = 'none';
                 videoResult.style.display = 'none';
-                saveBtn.style.display = 'block';  // Show save button in song mode
+                saveBtn.style.display = 'block';
                 
-                const response = await generator.generateMnemonic(word);
-                const formattedLyrics = formatLyrics(response);
+                const songResponse = await generator.generateSongMnemonic(word);
+                const formattedLyrics = formatLyrics(songResponse);
                 resultDiv.innerHTML = `<div class="mnemonic">${formattedLyrics}</div>`;
             }
         } catch (error) {
