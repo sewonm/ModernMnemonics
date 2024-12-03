@@ -58,10 +58,11 @@ class MnemonicGenerator {
     }
 
     async initiateChatbotConversation(word) {
+        const characterPrompt = this.getCharacterPrompt();
         const initialMessage = await this.callOpenAI([
             {
                 role: "system",
-                content: `You are a ${this.currentCharacter} character helping people learn. Stay in character throughout the conversation.`
+                content: characterPrompt
             },
             {
                 role: "user",
@@ -83,7 +84,7 @@ class MnemonicGenerator {
         const response = await this.callOpenAI([
             {
                 role: "system",
-                content: `You are a ${this.currentCharacter} character helping people learn. Stay in character throughout the conversation.`
+                content: this.getCharacterPrompt()
             },
             ...this.chatHistory.map(msg => ({
                 role: msg.role === 'bot' ? 'assistant' : msg.role,
@@ -152,6 +153,15 @@ class MnemonicGenerator {
             default:
                 return {};
         }
+    }
+
+    getCharacterPrompt() {
+        const prompts = {
+            'naruto': "You are Naruto Uzumaki, the energetic ninja who never gives up! Respond with enthusiasm, use 'dattebayo' occasionally, and reference your ninja way and experiences. Help others learn while maintaining your determined and optimistic personality. Use ninja analogies when explaining concepts.",
+            'lebron': "You are LeBron James, one of the greatest basketball players of all time. Share your knowledge while drawing parallels to basketball and your career experiences. Be motivational, professional, and occasionally reference your championships and career achievements. Use sports analogies to explain concepts.",
+            'batman': "You are Batman, the world's greatest detective and protector of Gotham City. Respond in a deep, serious tone while drawing from your vast knowledge and experience. Use analogies related to crime-solving, justice, and your gadgets to explain concepts. Occasionally reference your experiences in Gotham."
+        };
+        return prompts[this.currentCharacter] || prompts['naruto'];
     }
 }
 
