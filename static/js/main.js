@@ -210,6 +210,24 @@ function animateText(text, element) {
     showNextChunk();
 }
 
+function formatLyrics(text) {
+    // Split the text into sections (verses and chorus)
+    const sections = text.split('\n\n');
+    let formattedText = '<div class="title">🎵 Educational Song 🎵</div>\n\n';
+    
+    sections.forEach((section, index) => {
+        if (section.toLowerCase().includes('chorus') || section.toLowerCase().includes('[chorus]')) {
+            // Format chorus
+            formattedText += `<div class="chorus">${section.replace('[Chorus]', '').replace('Chorus:', '').trim()}</div>\n\n`;
+        } else {
+            // Format verse
+            formattedText += `<div class="verse">${section.trim()}</div>\n\n`;
+        }
+    });
+    
+    return formattedText;
+}
+
 // DOM interaction code
 document.addEventListener('DOMContentLoaded', () => {
     const generator = new MnemonicGenerator();
@@ -358,7 +376,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 chatInterface.style.display = 'none';
                 videoResult.style.display = 'none';
                 saveBtn.style.display = 'block';  // Show save button in song mode
-                resultDiv.innerHTML = `<p class="mnemonic">${response}</p>`;
+                const formattedLyrics = formatLyrics(response);
+                resultDiv.innerHTML = `<div class="mnemonic">${formattedLyrics}</div>`;
             }
         } catch (error) {
             resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
