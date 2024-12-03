@@ -355,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Character selection handling
     const characterSelect = document.getElementById('character');
-    characterSelect.addEventListener('change', (e) => {
+    characterSelect.addEventListener('change', async (e) => {
         const character = e.target.value;
         generator.currentCharacter = character;
         
@@ -375,15 +375,31 @@ document.addEventListener('DOMContentLoaded', () => {
         characterImg.src = `static/images/${character}-character.png`;
         characterImg.alt = character;
         chatInterface.appendChild(characterImg);
+
+        // Reset chat messages
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.innerHTML = '';
+        generator.chatHistory = [];
+
+        // Get word input and reinitiate conversation if there's a word
+        const word = wordInput.value.trim();
+        if (word) {
+            try {
+                loadingSpinner.style.display = 'block';
+                const response = await generator.initiateChatbotConversation(word);
+                addChatMessage(response, false);
+            } catch (error) {
+                addChatMessage('Error: ' + error.message, false);
+            } finally {
+                loadingSpinner.style.display = 'none';
+            }
+        }
     });
 
-    // Add event listener for song style changes
-    const songStyleSelect = document.getElementById('songStyle');
-    songStyleSelect.addEventListener('change', (e) => {
-        generator.currentSong = e.target.value;
+    chatInterface.addEventListener('click', () => {
+        chatInput.focus();
     });
 
-    // Chat interface handlers
     sendMessageBtn.addEventListener('click', async () => {
         const message = chatInput.value.trim();
         if (!message) return;
