@@ -5,8 +5,8 @@ class MnemonicGenerator {
         this.currentMode = 'brainrot';
         this.currentVoice = 'a';
         this.currentVideo = '';
-        this.currentSong = 'pop';
-        this.currentCharacter = 'friendly';
+        this.currentSong = 'pop';  // Default song style
+        this.currentCharacter = 'naruto';  // Set default character to naruto
         this.chatHistory = [];
         this.apiKey = localStorage.getItem('openai_api_key') || '';
     }
@@ -17,15 +17,15 @@ class MnemonicGenerator {
     }
 
     async generateMnemonic(word) {
-        switch(this.currentMode) {
-            case 'brainrot':
-                return this.generateBrainrotMnemonic(word);
+        switch (this.currentMode) {
             case 'song':
-                return this.generateSongMnemonic(word);
+                return await this.generateSongMnemonic(word);
+            case 'brainrot':
+                return await this.generateBrainrotMnemonic(word);
             case 'chatbot':
-                return this.initiateChatbotConversation(word);
+                return await this.initiateChatbotConversation(word);
             default:
-                return this.generateBrainrotMnemonic(word);
+                return 'Please select a valid mode';
         }
     }
 
@@ -44,17 +44,62 @@ class MnemonicGenerator {
     }
 
     async generateSongMnemonic(word) {
+        const songStyles = {
+            'pop': {
+                title: "On The Ground by ROSE",
+                artist: "ROSE",
+                style: "K-pop solo artist",
+                example: "On The Ground",
+                pattern: "emotional delivery with powerful vocals, focusing on self-reflection and growth"
+            },
+            'rap': {
+                title: "DNA by Kendrick Lamar",
+                artist: "Kendrick Lamar",
+                style: "conscious rap",
+                example: "DNA",
+                pattern: "rapid-fire verses with intense delivery and complex wordplay"
+            },
+            'nursery': {
+                title: "Twinkle Twinkle Little Star",
+                artist: "Traditional",
+                style: "nursery rhyme",
+                example: "Twinkle Twinkle Little Star",
+                pattern: "simple, repetitive melody with basic rhyming structure"
+            }
+        };
+
+        const style = this.currentSong;
+        console.log('Generating song in style:', style); // Debug log
+        
+        if (!songStyles[style]) {
+            throw new Error(`Invalid song style selected: ${style}`);
+        }
+
+        const template = songStyles[style];
+        const prompt = `Create a song about "${word}" in the style of ${template.title} by ${template.artist}.
+
+Style Instructions:
+1. Match the exact style of ${template.example}
+2. Use ${template.pattern}
+3. Keep the same rhythm and flow as the original
+4. Make it educational but catchy
+5. Include a chorus and verses
+6. Make sure it can be sung to the original melody
+
+Format the output with clear VERSE and CHORUS sections.`;
+
         const response = await this.callOpenAI([
             {
                 role: "system",
-                content: `You are a musical composer creating educational songs in ${this.currentSong} style.`
+                content: `You are a professional songwriter specializing in ${template.style} music.`
             },
             {
                 role: "user",
-                content: `Create memorable ${this.currentSong} style song lyrics about: ${word}. Make it catchy and educational.`
+                content: prompt
             }
         ]);
-        return response;
+
+        return `<div class="song-title">🎵 ${template.title} Style 🎵</div>\n\n${response}`;
     }
 
     async initiateChatbotConversation(word) {
@@ -165,6 +210,88 @@ class MnemonicGenerator {
     }
 }
 
+// Add this function at the top level of your file
+function animateText(text, element) {
+    // Remove any bracketed text
+    text = text.replace(/\[.*?\]/g, '').trim();
+    
+    // Clear previous content
+    element.innerHTML = '';
+    
+    // Split text into chunks of 3-5 words
+    const words = text.split(' ');
+    const chunks = [];
+    let currentChunk = [];
+    
+    words.forEach(word => {
+        currentChunk.push(word);
+        if (currentChunk.length >= (Math.random() * 3 + 3)) { // Random 3-5 words
+            chunks.push(currentChunk.join(' '));
+            currentChunk = [];
+        }
+    });
+    if (currentChunk.length > 0) {
+        chunks.push(currentChunk.join(' '));
+    }
+
+    // Create and position the text container
+    const textContainer = document.createElement('div');
+    textContainer.style.position = 'absolute';
+    textContainer.style.top = '10%';  // Position near the top
+    textContainer.style.left = '50%';
+    textContainer.style.transform = 'translateX(-50%)';
+    textContainer.style.width = '90%';
+    textContainer.style.textAlign = 'center';
+    element.appendChild(textContainer);
+
+    let currentIndex = 0;
+    
+    function showNextChunk() {
+        textContainer.textContent = chunks[currentIndex];
+        currentIndex = (currentIndex + 1) % chunks.length;
+        setTimeout(showNextChunk, 2000); // Show each chunk for 2 seconds
+    }
+    
+    showNextChunk();
+}
+
+function formatLyrics(text) {
+    // Split into title and lyrics
+    const parts = text.split('\n\n');
+    const title = parts[0];
+    const lyrics = parts.slice(1).join('\n\n');
+
+    // Split the lyrics into sections
+    const sections = lyrics.split('\n\n');
+    let formattedText = `${title}\n\n`;  // Keep the title
+    
+    sections.forEach((section, index) => {
+        // Add extra newline before each section for better spacing
+        formattedText += '\n';
+        
+        if (section.toLowerCase().includes('chorus') || 
+            section.toLowerCase().includes('[chorus]')) {
+            // Format chorus
+            formattedText += `<div class="chorus">${
+                section.replace('[Chorus]', '')
+                      .replace('Chorus:', '')
+                      .trim()
+                      .split('\n')
+                      .join('\n')
+            }</div>\n`;
+        } else {
+            // Format verse
+            formattedText += `<div class="verse">${
+                section.trim()
+                      .split('\n')
+                      .join('\n')
+            }</div>\n`;
+        }
+    });
+    
+    return formattedText;
+}
+
 // DOM interaction code
 document.addEventListener('DOMContentLoaded', () => {
     const generator = new MnemonicGenerator();
@@ -181,6 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatInput = document.getElementById('chatInput');
     const sendMessageBtn = document.getElementById('sendMessage');
     const modeButtons = document.querySelectorAll('.mode-btn');
+    const videoResult = document.getElementById('videoResult');
 
     function showModeOptions(mode) {
         // Hide all mode options and chat interface
@@ -188,7 +316,9 @@ document.addEventListener('DOMContentLoaded', () => {
             option.style.display = 'none';
         });
         chatInterface.style.display = 'none';
+        videoResult.style.display = 'none';
         resultDiv.style.display = 'block';
+        saveBtn.style.display = 'none';  // Hide save button by default
         
         // Show the options for the selected mode
         const optionsToShow = document.getElementById(`${mode}Options`);
@@ -198,8 +328,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addChatMessage(message, isUser = false) {
+        const chatMessages = document.getElementById('chatMessages');
         const messageDiv = document.createElement('div');
-        messageDiv.className = `chat-message ${isUser ? 'user-message' : 'bot-message'}`;
+        messageDiv.className = `chat-message ${isUser ? 'user' : 'bot'}`;
         messageDiv.textContent = message;
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -225,12 +356,77 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             modeButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            generator.currentMode = btn.dataset.mode;
-            showModeOptions(btn.dataset.mode);
+            const mode = btn.dataset.mode;
+            generator.currentMode = mode;
+            showModeOptions(mode);
+            
+            // Reset results when switching modes
+            resultDiv.style.display = 'none';
+            chatInterface.style.display = 'none';
+            videoResult.style.display = 'none';
+            
+            // Update song style if in song mode
+            if (mode === 'song') {
+                const songStyleSelect = document.getElementById('songStyle');
+                generator.currentSong = songStyleSelect.value;
+            }
         });
     });
 
-    // Chat interface handlers
+    // Song style selection
+    const songStyleSelect = document.getElementById('songStyle');
+    songStyleSelect.addEventListener('change', (e) => {
+        generator.currentSong = e.target.value;
+        console.log('Song style changed to:', e.target.value); // Debug log
+    });
+
+    // Character selection handling
+    const characterSelect = document.getElementById('character');
+    characterSelect.addEventListener('change', async (e) => {
+        const character = e.target.value;
+        generator.currentCharacter = character;
+        
+        // Update chat interface appearance
+        const chatInterface = document.getElementById('chatInterface');
+        chatInterface.className = 'chat-interface ' + character;
+        
+        // Remove existing character image if any
+        const existingCharacter = chatInterface.querySelector('.chat-character');
+        if (existingCharacter) {
+            existingCharacter.remove();
+        }
+        
+        // Add new character image
+        const characterImg = document.createElement('img');
+        characterImg.className = 'chat-character';
+        characterImg.src = `static/images/${character}-character.png`;
+        characterImg.alt = character;
+        chatInterface.appendChild(characterImg);
+
+        // Reset chat messages
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.innerHTML = '';
+        generator.chatHistory = [];
+
+        // Get word input and reinitiate conversation if there's a word
+        const word = wordInput.value.trim();
+        if (word) {
+            try {
+                loadingSpinner.style.display = 'block';
+                const response = await generator.initiateChatbotConversation(word);
+                addChatMessage(response, false);
+            } catch (error) {
+                addChatMessage('Error: ' + error.message, false);
+            } finally {
+                loadingSpinner.style.display = 'none';
+            }
+        }
+    });
+
+    chatInterface.addEventListener('click', () => {
+        chatInput.focus();
+    });
+
     sendMessageBtn.addEventListener('click', async () => {
         const message = chatInput.value.trim();
         if (!message) return;
@@ -255,7 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
     generateBtn.addEventListener('click', async () => {
         const word = wordInput.value.trim();
         if (!word) {
-            alert('Please enter a word');
+            alert('Please enter a word or concept');
             return;
         }
 
@@ -266,20 +462,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             loadingSpinner.style.display = 'block';
-            generateBtn.disabled = true;
-            
-            const response = await generator.generateMnemonic(word);
+            resultDiv.innerHTML = '';
             
             if (generator.currentMode === 'chatbot') {
-                // Show chat interface for chatbot mode
-                resultDiv.style.display = 'none';
                 chatInterface.style.display = 'block';
-                chatMessages.innerHTML = '';
-                addChatMessage(response);
-            } else {
-                // Show regular result for other modes
-                resultDiv.innerHTML = `<p class="mnemonic">${response}</p>`;
+                videoResult.style.display = 'none';
+                resultDiv.style.display = 'none';
+                saveBtn.style.display = 'none';
+
+                // Set initial character appearance
+                const character = characterSelect.value;
+                generator.currentCharacter = character;
+                chatInterface.className = 'chat-interface ' + character;
+                
+                // Add character image
+                const existingCharacter = chatInterface.querySelector('.chat-character');
+                if (existingCharacter) {
+                    existingCharacter.remove();
+                }
+                const characterImg = document.createElement('img');
+                characterImg.className = 'chat-character';
+                characterImg.src = `static/images/${character}-character.png`;
+                characterImg.alt = character;
+                chatInterface.appendChild(characterImg);
+
+                const response = await generator.initiateChatbotConversation(word);
+                addChatMessage(response, false);
+            } else if (generator.currentMode === 'brainrot') {
+                // Show video result for brainrot mode
+                resultDiv.style.display = 'none';
+                chatInterface.style.display = 'none';
+                videoResult.style.display = 'block';
                 saveBtn.style.display = 'block';
+
+                // Set up the video and text
+                const resultVideoEl = document.getElementById('resultVideo');
+                const videoTextEl = document.getElementById('videoText');
+
+                // Set and play the video
+                if (!generator.currentVideo) {
+                    throw new Error('No video selected');
+                }
+                resultVideoEl.src = generator.currentVideo;
+                resultVideoEl.style.display = 'block';
+                
+                try {
+                    await resultVideoEl.play();
+                } catch (e) {
+                    console.error('Video playback error:', e);
+                }
+
+                // Generate and display the text
+                const response = await generator.generateBrainrotMnemonic(word);
+                animateText(response, videoTextEl);
+            } else if (generator.currentMode === 'song') {
+                // Show regular result for song mode
+                resultDiv.style.display = 'block';
+                chatInterface.style.display = 'none';
+                videoResult.style.display = 'none';
+                saveBtn.style.display = 'block';
+                
+                const songResponse = await generator.generateSongMnemonic(word);
+                const formattedLyrics = formatLyrics(songResponse);
+                resultDiv.innerHTML = `<div class="mnemonic">${formattedLyrics}</div>`;
             }
         } catch (error) {
             resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
@@ -288,7 +533,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } finally {
             loadingSpinner.style.display = 'none';
-            generateBtn.disabled = false;
         }
     });
 
@@ -340,34 +584,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
 
-    // Video box initialization and handlers
+    // Video selection handling
     const videoBoxes = document.querySelectorAll('.video-box');
     videoBoxes.forEach(box => {
         const video = box.querySelector('video');
-        if (video) {
-            // Set initial frame
-            video.currentTime = 0;
-            
-            // Play on hover
-            box.addEventListener('mouseenter', () => {
-                video.play();
-            });
-            
-            // Pause and reset on mouse leave
-            box.addEventListener('mouseleave', () => {
-                video.pause();
-                video.currentTime = 0;
-            });
-        }
-
-        // Handle selection
+        
         box.addEventListener('click', () => {
-            if (box.dataset.video) {
-                videoBoxes.forEach(b => b.classList.remove('active'));
-                box.classList.add('active');
-                generator.currentVideo = box.dataset.video;
+            videoBoxes.forEach(b => b.classList.remove('active'));
+            box.classList.add('active');
+            
+            if (video) {
+                generator.currentVideo = video.src;
+                
+                // Update result video if it exists
+                const resultVideo = document.getElementById('resultVideo');
+                if (resultVideo) {
+                    resultVideo.src = video.src;
+                    resultVideo.load(); // Reload the video
+                }
             }
         });
+    });
+
+    // Initialize video selection
+    const firstVideoBox = videoBoxes[0];
+    if (firstVideoBox) {
+        const firstVideo = firstVideoBox.querySelector('video');
+        if (firstVideo) {
+            generator.currentVideo = firstVideo.src;
+        }
+    }
+
+    // Add event listener for song style changes
+    songStyleSelect.addEventListener('change', (e) => {
+        generator.currentSong = e.target.value;
     });
 
     // Initialize

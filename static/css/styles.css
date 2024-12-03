@@ -32,6 +32,16 @@ h1 {
     margin-bottom: 2rem;
 }
 
+.site-description {
+    text-align: center;
+    color: var(--secondary-color);
+    max-width: 800px;
+    margin: 0 auto 2rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    padding: 0 20px;
+}
+
 h2 {
     color: var(--secondary-color);
     margin: 1.5rem 0;
@@ -88,9 +98,31 @@ button:disabled {
 
 .mnemonic {
     background-color: #e8f4ff;
-    padding: 1rem;
+    padding: 1.5rem;
     border-radius: var(--border-radius);
     margin: 1rem 0;
+    white-space: pre-wrap;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.8;
+}
+
+.mnemonic .verse {
+    margin-bottom: 1.5rem;
+}
+
+.mnemonic .chorus {
+    font-weight: 600;
+    margin: 1.5rem 0;
+    padding-left: 1rem;
+    border-left: 3px solid var(--primary-color);
+}
+
+.mnemonic .title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    text-align: center;
 }
 
 .error {
@@ -302,67 +334,140 @@ h3 {
     font-size: 0.9rem;
 }
 
+/* Video Result Styles */
+.video-result {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    margin: 20px auto;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.video-result video {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.video-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.video-text > div {
+    color: #FFE81F;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 90%;
+    text-align: center;
+    font-size: 2.5rem;
+    line-height: 1.5;
+    font-weight: 600;
+    text-shadow: 
+        -2px -2px 0 #000,
+        2px -2px 0 #000,
+        -2px 2px 0 #000,
+        2px 2px 0 #000;
+    background-color: rgba(0, 0, 0, 0.5);
+    transition: opacity 0.3s ease;
+}
+
 /* Chat Interface Styles */
 .chat-interface {
-    margin: 20px 0;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    position: relative;
+    height: 700px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: var(--border-radius);
     overflow: hidden;
-    width: 100%;
+}
+
+.chat-character {
+    position: absolute;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    max-height: 300px;
+    width: auto;
+    z-index: 1;
 }
 
 .chat-messages {
-    height: 300px;
+    height: calc(100% - 60px);
     overflow-y: auto;
-    padding: 15px;
-    background-color: #f9f9f9;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.7);
+    position: relative;
+    z-index: 2;
 }
 
 .chat-message {
-    margin-bottom: 15px;
-    padding: 10px;
-    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: var(--border-radius);
     max-width: 80%;
 }
 
-.user-message {
-    background-color: var(--primary-color);
-    color: white;
+.chat-message.user {
     margin-left: auto;
+    background-color: rgba(74, 144, 226, 0.8);
+    color: white;
 }
 
-.bot-message {
-    background-color: #e9ecef;
-    color: #333;
+.chat-message.bot {
     margin-right: auto;
+    background-color: rgba(255, 255, 255, 0.8);
 }
 
 .chat-input-container {
+    position: relative;
+    z-index: 2;
     display: flex;
-    padding: 10px;
-    background-color: white;
-    border-top: 1px solid #ddd;
+    gap: 10px;
+    padding: 15px;
+    background-color: rgba(255, 255, 255, 0.9);
 }
 
 #chatInput {
     flex: 1;
-    padding: 8px;
-    margin-right: 10px;
+    padding: 12px 15px;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    height: 50px;
+    min-width: 300px;
 }
 
 #sendMessage {
     padding: 8px 15px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+    min-width: 60px;
+    font-size: 14px;
+    height: 40px;
+    align-self: center;
 }
 
-#sendMessage:hover {
-    background-color: #357abd;
+/* Character-specific backgrounds */
+.chat-interface.naruto {
+    background-image: url('../images/naruto-background.jpg');
+}
+
+.chat-interface.lebron {
+    background-image: url('../images/lebron-background.jpg');
+}
+
+.chat-interface.batman {
+    background-image: url('../images/batman-background.jpg');
 }
 
 /* Video Thumbnails */

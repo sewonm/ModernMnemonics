@@ -9,6 +9,7 @@
 <body>
     <div class="container">
         <h1>Modern Mnemonics</h1>
+        <p class="site-description">Are you easily distracted? Tired of boring study methods? Try Modern Mnemonics, where learning meets entertainment! From mastering basic tasks to tackling complex topics, you can study through engaging videos, catchy songs, and even chat with your favorite celebrities and characters. Learning has never been this fun!</p>
         
         <div class="api-key-section">
             <input type="password" id="api-key-input" placeholder="Enter your OpenAI API key">
@@ -32,34 +33,20 @@
                 <!-- Mode Options -->
                 <div id="brainrotOptions" class="mode-options" style="display: none;">
                     <p class="mode-description">Transform any topic into a fun, engaging video that makes learning memorable! Perfect for visual learners who enjoy internet culture and memes.</p>
-                    <div class="voice-selection">
-                        <h3>Select Voice</h3>
-                        <div class="voice-options">
-                            <label class="voice-option">
-                                <input type="radio" name="voice" value="a" checked>
-                                <span>Voice A</span>
-                            </label>
-                            <label class="voice-option">
-                                <input type="radio" name="voice" value="b">
-                                <span>Voice B</span>
-                            </label>
-                        </div>
-                    </div>
-
                     <div class="video-selection">
-                        <h3>Select Background Video</h3>
+                        <h3>Select Video Background</h3>
                         <div class="video-grid">
-                            <div class="video-box active" data-video="v15044gf0000cq3kg37og65o0es57v8g.mp4">
+                            <div class="video-box active" data-video="minecraft">
                                 <video src="v15044gf0000cq3kg37og65o0es57v8g.mp4" muted loop></video>
-                                <div class="video-label">Video 1</div>
+                                <div class="video-label">Minecraft</div>
                             </div>
-                            <div class="video-box">
-                                <div class="placeholder">Coming Soon</div>
-                                <div class="video-label">Video 2</div>
+                            <div class="video-box" data-video="subwaysurfers">
+                                <video src="v12044gd0000cbfgbrbc77u7m51p0lpg.mp4" muted loop></video>
+                                <div class="video-label">Subway Surfers</div>
                             </div>
-                            <div class="video-box">
-                                <div class="placeholder">Coming Soon</div>
-                                <div class="video-label">Video 3</div>
+                            <div class="video-box" data-video="gta">
+                                <video src="v09025g40000cjsdomrc77u6t950hsbg.mp4" muted loop></video>
+                                <div class="video-label">GTA</div>
                             </div>
                         </div>
                     </div>
@@ -72,8 +59,7 @@
                         <select id="songStyle" class="song-dropdown">
                             <option value="pop">Pop</option>
                             <option value="rap">Rap</option>
-                            <option value="rock">Rock</option>
-                            <option value="classical">Classical</option>
+                            <option value="nursery">Nursery Rhymes</option>
                         </select>
                     </div>
                 </div>
@@ -96,7 +82,12 @@
             <!-- Right Column - Output and Saved -->
             <div class="output-column">
                 <div id="loading" style="display: none;">Generating...</div>
-                
+            
+                 <!-- Video Result Container -->
+                <div id="videoResult" class="video-result" style="display: none;">
+                    <video id="resultVideo" autoplay loop muted></video>
+                    <div id="videoText" class="video-text"></div>
+                </div>
                 <!-- Chat Interface -->
                 <div id="chatInterface" class="chat-interface" style="display: none;">
                     <div id="chatMessages" class="chat-messages"></div>
