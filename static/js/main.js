@@ -500,35 +500,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
 
-    // Video box initialization and handlers
+    // Video selection handling
     const videoBoxes = document.querySelectorAll('.video-box');
     videoBoxes.forEach(box => {
         const video = box.querySelector('video');
-        if (video) {
-            // Set initial frame
-            video.currentTime = 0;
-            
-            // Play on hover
-            box.addEventListener('mouseenter', () => {
-                video.play();
-            });
-            
-            // Pause and reset on mouse leave
-            box.addEventListener('mouseleave', () => {
-                video.pause();
-                video.currentTime = 0;
-            });
-        }
-
-        // Handle selection
+        
+        // Start playing video on hover
+        box.addEventListener('mouseenter', () => {
+            video.play();
+        });
+        
+        // Pause video when mouse leaves
+        box.addEventListener('mouseleave', () => {
+            video.pause();
+        });
+        
+        // Handle video selection
         box.addEventListener('click', () => {
-            if (box.dataset.video) {
-                videoBoxes.forEach(b => b.classList.remove('active'));
-                box.classList.add('active');
-                generator.currentVideo = box.dataset.video;
+            // Remove active class from all boxes
+            videoBoxes.forEach(b => b.classList.remove('active'));
+            // Add active class to clicked box
+            box.classList.add('active');
+            
+            // Update current video selection
+            generator.currentVideo = box.dataset.video;
+            
+            // Update the result video if it exists
+            const resultVideo = document.querySelector('#videoResult video');
+            if (resultVideo) {
+                resultVideo.src = video.src;
+                resultVideo.play();
             }
         });
     });
+
+    // Initialize the first video as active
+    if (videoBoxes.length > 0) {
+        const firstVideo = videoBoxes[0];
+        firstVideo.classList.add('active');
+        generator.currentVideo = firstVideo.dataset.video;
+    }
 
     // Initialize
     const initialMode = 'brainrot';
