@@ -112,19 +112,32 @@ Hit it`
             }
         };
 
-        // Get the selected song style
+        // Get the selected song style and template
         const songStyle = this.currentSong;
         const template = songTemplates[songStyle];
 
-        // Generate the song based on the template
+        let prompt;
+        switch(songStyle) {
+            case 'pop':
+                prompt = `Create a pop song about ${word} following the exact structure and style of "APT by Rose and Bruno Mars". Use the same rhythm and flow, including repeating patterns and Korean words where appropriate. Keep the same number of lines and similar line lengths.`;
+                break;
+            case 'rap':
+                prompt = `Create a rap song about ${word} following the exact structure and style of Kendrick Lamar's "DNA". Use the same aggressive flow, repetitive patterns, and introspective style. Keep the same number of lines and similar line lengths. Include the repeated "I got" pattern and maintain the intense delivery style.`;
+                break;
+            case 'nursery':
+                prompt = `Create a nursery rhyme about ${word} following the exact structure and style of "Mary Had a Little Lamb". Use the same simple, repetitive pattern and child-friendly tone. Keep the same number of lines and similar line lengths. Include playful elements and the "yeah" additions like in the example.`;
+                break;
+        }
+
+        // Generate the song based on the template and style-specific prompt
         const response = await this.callOpenAI([
             {
                 role: "system",
-                content: `You are a professional songwriter specializing in ${songStyle} music. Create lyrics in the exact style of the following song, but about the topic provided. Maintain the same rhythm, flow, and structure. Reference song: ${template.title}\n\n${template.lyrics}`
+                content: `You are a professional songwriter specializing in ${songStyle} music. Here's the reference song to match exactly:\n\n${template.lyrics}`
             },
             {
                 role: "user",
-                content: `Write lyrics about: ${word}`
+                content: prompt
             }
         ]);
 
@@ -393,6 +406,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const characterSelect = document.getElementById('character');
     characterSelect.addEventListener('change', (e) => {
         generator.currentCharacter = e.target.value;
+    });
+
+    // Add event listener for song style changes
+    const songStyleSelect = document.getElementById('songStyle');
+    songStyleSelect.addEventListener('change', (e) => {
+        generator.currentSong = e.target.value;
     });
 
     // Chat interface handlers
