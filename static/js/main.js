@@ -45,39 +45,40 @@ class MnemonicGenerator {
 
     async generateSongMnemonic(word) {
         const songTemplates = {
-            pop: {
-                title: "APT by ROSE and Bruno Mars",
-                style: "K-pop song with Rose's style",
-                pattern: "Follow Rose's APT song structure with its unique rhythm and flow. Match the exact melody and style of APT, including the catchy chorus and verse patterns."
+            'pop': {
+                title: "On The Ground by ROSE",
+                style: "K-pop solo artist style",
+                pattern: "Use ROSE's signature style from 'On The Ground' with its emotional delivery and powerful vocals. Match the exact rhythm and flow of the original song."
             },
-            rap: {
+            'rap': {
                 title: "DNA by Kendrick Lamar",
                 style: "aggressive rap with Kendrick's style",
-                pattern: "Use Kendrick's DNA flow with its intense delivery, rapid-fire verses, and the repeated 'I got' phrases. Match the exact rhythm and energy of DNA."
+                pattern: "Match Kendrick's DNA flow exactly - rapid-fire verses with 'I got' repetition. Keep the same intense energy and rhythm as the original DNA song."
             },
-            nursery: {
-                title: "Mary Had a Little Lamb",
-                style: "simple nursery rhyme",
-                pattern: "Use simple, repetitive patterns like Mary Had a Little Lamb. Keep the same rhythm and melody, making it easy for children to remember."
+            'nursery': {
+                title: "Twinkle Twinkle Little Star",
+                style: "classic nursery rhyme",
+                pattern: "Use the simple, memorable melody of Twinkle Twinkle Little Star. Keep the same rhythm and rhyme scheme as the original nursery rhyme."
             }
         };
 
         const style = this.currentSong;
+        console.log('Current song style:', style);  // Debug log
+        
         if (!songTemplates[style]) {
-            console.error('Invalid song style:', style);
-            return 'Error: Invalid song style selected';
+            throw new Error(`Invalid song style selected: ${style}`);
         }
 
         const template = songTemplates[style];
-        const systemPrompt = `You are writing a ${template.style} about ${word}. 
-Your response should follow these rules:
-1. Match the EXACT style, flow, and melody of ${template.title}
+        const systemPrompt = `You are writing a song about ${word} in the exact style of ${template.title}. 
+Your response must strictly follow these rules:
+1. Use the EXACT same melody, rhythm, and flow as ${template.title}
 2. ${template.pattern}
-3. Keep the exact same rhythm and structure as the original song
-4. Format verses and chorus clearly with line breaks
-5. Make sure each line matches the syllable count and rhythm of the original song
-6. Use similar rhyme schemes and patterns as the original song
-7. Include a clear chorus that repeats with the same pattern as the original`;
+3. Each line must have the same number of syllables as the original song
+4. Use the same rhyme scheme as the original song
+5. Include a chorus that matches the original song's structure
+6. Format output with clear verse and chorus sections
+7. Make sure every line can be sung to the original melody`;
 
         const response = await this.callOpenAI([
             {
@@ -86,7 +87,7 @@ Your response should follow these rules:
             },
             {
                 role: "user",
-                content: `Write lyrics about ${word} that EXACTLY match the style, flow, and melody of ${template.title}. Make sure it can be sung to the same tune.`
+                content: `Write lyrics about ${word} that match the exact melody and style of ${template.title}. The lyrics must be singable to the original tune.`
             }
         ]);
 
@@ -465,21 +466,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultDiv.style.display = 'none';
                 chatInterface.style.display = 'none';
                 videoResult.style.display = 'block';
-                saveBtn.style.display = 'block';  // Show save button in brainrot mode
-                
-                // Get the selected video source
-                const selectedVideo = document.querySelector('.video-box.active');
-                const videoSrc = selectedVideo ? selectedVideo.dataset.video : '';
-                
+                saveBtn.style.display = 'block';
+
                 // Set up the video and text
                 const resultVideoEl = document.getElementById('resultVideo');
                 const videoTextEl = document.getElementById('videoText');
+
+                // Set and play the video
+                if (!generator.currentVideo) {
+                    throw new Error('No video selected');
+                }
+                resultVideoEl.src = generator.currentVideo;
+                resultVideoEl.style.display = 'block';
                 
-                resultVideoEl.src = videoSrc;
-                resultVideoEl.play();
-                
-                // Start text animation
-                const response = await generator.generateMnemonic(word);
+                try {
+                    await resultVideoEl.play();
+                } catch (e) {
+                    console.error('Video playback error:', e);
+                }
+
+                // Generate and display the text
+                const response = await generator.generateBrainrotMnemonic(word);
                 animateText(response, videoTextEl);
             } else if (generator.currentMode === 'song') {
                 // Show regular result for song mode
@@ -553,43 +560,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // Video selection handling
     const videoBoxes = document.querySelectorAll('.video-box');
     videoBoxes.forEach(box => {
-        const video = box.querySelector('video');
-        
-        // Start playing video on hover
-        box.addEventListener('mouseenter', () => {
-            video.play();
-        });
-        
-        // Pause video when mouse leaves
-        box.addEventListener('mouseleave', () => {
-            video.pause();
-        });
-        
-        // Handle video selection
         box.addEventListener('click', () => {
-            // Remove active class from all boxes
+            // Update active state
             videoBoxes.forEach(b => b.classList.remove('active'));
-            // Add active class to clicked box
             box.classList.add('active');
             
-            // Update current video selection
-            generator.currentVideo = box.dataset.video;
-            
-            // Update the result video if it exists
-            const resultVideo = document.querySelector('#videoResult video');
-            if (resultVideo) {
-                resultVideo.src = video.src;
-                resultVideo.play();
-            }
+            // Store the selected video source
+            const video = box.querySelector('video');
+            generator.currentVideo = video.src;
         });
     });
 
-    // Initialize the first video as active
+    // Set initial video
     if (videoBoxes.length > 0) {
         const firstVideo = videoBoxes[0];
         firstVideo.classList.add('active');
-        generator.currentVideo = firstVideo.dataset.video;
+        const video = firstVideo.querySelector('video');
+        generator.currentVideo = video.src;
     }
+
+    // Add event listener for song style changes
+    const songStyleSelect = document.getElementById('songStyle');
+    songStyleSelect.addEventListener('change', (e) => {
+        generator.currentSong = e.target.value;
+    });
 
     // Initialize
     const initialMode = 'brainrot';
